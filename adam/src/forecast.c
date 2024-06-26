@@ -145,7 +145,7 @@ void forecast(void)
 static  bool firstTime = true;    
 static  FUJI_TIME future_time;
 static  FUJI_TIME adjust_time;
-  
+static  FUJI_TIME current_time;  
 
   if (firstTime)
   {
@@ -153,15 +153,15 @@ static  FUJI_TIME adjust_time;
       io_time(&future_time);
   }
 
-  if (wait_for_time(future_time) || forceRefresh)
+  if (time_reached(&future_time) || forceRefresh)
   {
     forceRefresh = false;
 
-    io_time(&future_time);
+    io_time(&current_time);
     memset(adjust_time, 0, sizeof(FUJI_TIME));
 
     adjust_time.minute = optData.refreshIntervalMinutes;
-    add_time(future_time, future_time, adjust_time);
+    add_time(&future_time, &current_time, &adjust_time);
 
     screen_forecast_init();
     
@@ -175,12 +175,13 @@ static  FUJI_TIME adjust_time;
       for (int i=0;i<4;i++)
       {
         forecast_parse((unsigned char) (i + forecast_offset), &forecastData);
-        screen_forecast(i,&forecastData, fg, bg, true);
+        screen_forecast(i,&forecastData, fg, bg, true, &current_time, &future_time);
       }
       display_sprites();
       forecast_close();
       
     }
+
   }
 
 
@@ -198,9 +199,12 @@ static  FUJI_TIME adjust_time;
     csleep(1);
 
     if ((timer % CHECK_TIME_FREQUENCY) == 0)
-      if (wait_for_time(future_time))
-        timer = 1;
-
+    {
+      io_time(&current_time);
+      //screen_time(&current_time, &future_time, fg, bg);
+      if (time_reached(&future_time))
+        break;
+    }
     timer--;
    }
 

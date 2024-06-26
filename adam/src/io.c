@@ -159,7 +159,7 @@ void add_time (FUJI_TIME *result, FUJI_TIME *time1, FUJI_TIME *add_time)
 
     if (result->hour > 23)
     {
-        result->hour %= 24;
+        result->hour %= 24;  // we're not going into days.
     }
 
 }
@@ -171,7 +171,7 @@ unsigned long time_in_seconds(FUJI_TIME *time)
           3600 * time->hour; 
 }
 
-bool wait_for_time(FUJI_TIME *wait_until)
+bool time_reached(FUJI_TIME *wait_until)
 {
     FUJI_TIME  current;
     bool past_time = false;
@@ -181,6 +181,10 @@ bool wait_for_time(FUJI_TIME *wait_until)
 
     io_time(&current);
 
+    // dealing with the case where the
+    // future time has rolled to the
+    // next day
+    //    00:01               23:51
     if (wait_until->hour < current.hour)
         return false;
 
