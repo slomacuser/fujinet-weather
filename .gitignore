@@ -26,6 +26,7 @@
 !fujinet-network-*.lib
 !fujinet-*.lib
 fujinet-lib/
+**/_libs/
 
 # Shared objects (inc. Windows DLLs)
 *.dll
@@ -74,8 +75,9 @@ AppleWin.log
 
 Makefile.options
 .DS_Store
-weather/adam/weather_BOOTSTRAP.bin
-weather/adam/weather.ddp
+
+# for fujinet-weather
+adam/weather_BOOTSTRAP.bin
+adam/weather.ddp
 test/adam/.clang-format
-weather/_libs/
-**/_libs/
+vic20-rom/weather*
