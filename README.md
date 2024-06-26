@@ -14,7 +14,12 @@ Please make all forks and enhancements to this repo via fork and PR.
 - no more info currently
 
 ### ADAM
-- need zcc compiler for ADAM? - more info needed
+- need zcc compiler for ADAM.
+  This version has the following features
+  1) Option feature the change polling frequency
+  2) Only asks for weather no more than once every 10 minutes
+  3) Calls location by ip only once instead of everytime the application is run
+  4) You can manually enter the latitude and logitude if desired
 
 ### Apple2
 - cc65 & fn-libs (pulled automatically)

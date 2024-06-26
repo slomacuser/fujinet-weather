@@ -11,6 +11,7 @@
 #include "forecast.h"
 #include "location.h"
 #include "options.h"
+#include "io.h"
 
 #define CLIENT_VERSION "1.0"
 void screen_init(void);
@@ -34,10 +35,11 @@ void screen_colors(unsigned long d, short offset, unsigned char *fg, unsigned ch
 
 void screen_welcome(void);
 
-
+void screen_time(FUJI_TIME *current_time, FUJI_TIME *next_update, unsigned char fg, unsigned char bg);
 
 void screen_daily(char *date, unsigned char icon, char *temperature, char *pressure, char *description, char *location, char *wind, char *feels, char *dew, char *visibility, char *timezone,
-                  char *sunrise, char *sunset, char *humidity, char *clouds, char *time, unsigned char foregroundColor, unsigned char backgroundColor, bool dayNight);
+                  char *sunrise, char *sunset, char *humidity, char *clouds, char *time, unsigned char foregroundColor, unsigned char backgroundColor, bool dayNight,
+                  FUJI_TIME *current, FUJI_TIME *future);
 
 void screen_options_init(void);
 void screen_options_load_failed(void);
@@ -69,7 +71,7 @@ void screen_weather_could_not_get(void);
 void screen_weather_parsing(void);
 void screen_weather_keys(void);
 
-void screen_forecast(unsigned char i, ForecastData *f, unsigned char foregroundColor, unsigned char backgroundColor, bool day);
+void screen_forecast(unsigned char i, ForecastData *f, unsigned char foregroundColor, unsigned char backgroundColor, bool day, FUJI_TIME *current, FUJI_TIME *future);
 
 void screen_forecast_keys(void);
 

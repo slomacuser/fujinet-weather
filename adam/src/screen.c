@@ -275,6 +275,16 @@ bool is_number(char *string, bool floating)
     return true;
 }
 
+void screen_time(FUJI_TIME *current_time, FUJI_TIME *next_update, unsigned char fg, unsigned char bg)
+{
+    vdp_color(fg, bg, bg);
+    gotoxy(8, 20);
+    cprintf("%02d:%02d Next Update %02d:%02d",
+        current_time->hour, current_time->minute,
+        next_update->hour, next_update->minute);
+}
+
+
 bool screen_location(Location *l, bool *autoip, bool *manual)
 {
     unsigned char fg = VDP_INK_BLACK;
@@ -510,7 +520,8 @@ bool screen_options(OptionsData *o)
 /* ***************************************************************************** */
 
 void screen_daily(char *date, unsigned char icon, char *temperature, char *pressure, char *description, char *location, char *wind, char *feels, char *dew, char *visibility, char *timezone,
-                  char *sunrise, char *sunset, char *humidity, char *clouds, char *time, unsigned char foregroundColor, unsigned char backgroundColor, bool day)
+                  char *sunrise, char *sunset, char *humidity, char *clouds, char *time, unsigned char foregroundColor, unsigned char backgroundColor, bool day,
+                  FUJI_TIME *current, FUJI_TIME *future)
 {
     void *param = &udgs;
     int x_start;
@@ -552,6 +563,7 @@ void screen_daily(char *date, unsigned char icon, char *temperature, char *press
 
     sprintf(tmp, "SUNRISE: %s\nSUNSET: %s\n\nHUMIDITY: %s\nCLOUDS: %s\n\nTIME: %s", sunrise, sunset, humidity, clouds, time);
     smartkeys_puts(160, 96, tmp);
+
 }
 
 /* ***************************************************************************** */
@@ -775,7 +787,8 @@ void screen_forecast_parsing(void)
     smartkeys_status("\n  PARSING FORECAST DATA, PLEASE WAIT...");
 }
 
-void screen_forecast(unsigned char i, ForecastData *f, unsigned char foregroundColor, unsigned char backgroundColor, bool day)
+void screen_forecast(unsigned char i, ForecastData *f, unsigned char foregroundColor, unsigned char backgroundColor, bool day,
+                    FUJI_TIME *current, FUJI_TIME *future)
 {
     //                    i  D  d   l   h
     unsigned char x[5] = {0, 7, 15, 21, 27};
@@ -807,6 +820,7 @@ void screen_forecast(unsigned char i, ForecastData *f, unsigned char foregroundC
 
         gotoxy(x[4],y);
         cprintf("HIGH");    
+
     }
 
     vdp_color(foregroundColor, backgroundColor, backgroundColor);

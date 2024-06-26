@@ -12,6 +12,7 @@
 #define IO_H
 
 #include <stdbool.h>
+#include <stddef.h>
 
 #define DISPLAY_DEBUG 1
 #define DEBUG_DELAY (400)
@@ -93,7 +94,7 @@ int io_time(FUJI_TIME *time);
 void add_time (FUJI_TIME *result, FUJI_TIME *time1, FUJI_TIME *add_time);
 
 /*
-wait_for_time 
+time_reached 
 - This function will return true if the supplied time has exceeded
 Parameters
 wait_until: FUJI_TIME representing the time to wait for.
@@ -101,7 +102,7 @@ wait_until: FUJI_TIME representing the time to wait for.
 Returns
  true: current time is equal or exceeded 'wait_util'
 */
-bool wait_for_time(FUJI_TIME *wait_until);
+bool time_reached(FUJI_TIME *wait_until);
 
 /*
 io_json_open 
