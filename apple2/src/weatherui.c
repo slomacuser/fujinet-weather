@@ -64,9 +64,10 @@ void disp_nokey() {
 	gotoxy(0,10);
 	cprintf("Error: APP KEY was not found\n");
 	gotoxy(0,12);
-	cprintf("Please get your own API KEY, put its\r\n");
-	cprintf("contents into a file '56000101.key'\r\n");
-	cprintf("in the /Fujinet directory of SD card.\r\n");
+	cprintf("Please get your own API KEY: \r\n");
+	cprintf("Go to openweathermap.org and sign up.\r\n");
+	cprintf("Put API Key into a file '56000101.key'\r\n");
+	cprintf("in the /FujiNet/ directory of SD card.\r\n");
 }
 char get_keyin() {
 	while (!kbhit()) {

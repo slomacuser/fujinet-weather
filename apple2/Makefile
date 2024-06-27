@@ -3,7 +3,7 @@
 # Set the TARGETS and PROGRAM values as required.
 # See makefiles/build.mk for details on directory structure for src files and how to add custom extensions to the build.
 
-TARGETS = apple2
+TARGETS = apple2enh
 PROGRAM := weather
 
 SUB_TASKS := clean disk test release
@@ -14,7 +14,7 @@ all:
 		echo "-------------------------------------"; \
 		echo "Building $$target"; \
 		echo "-------------------------------------"; \
-		$(MAKE) --no-print-directory -f ../makefiles/build.mk CURRENT_TARGET=$$target PROGRAM=$(PROGRAM) $(MAKECMDGOALS); \
+		$(MAKE) --no-print-directory -f ../../fujinet-build-tools/makefiles/build.mk CURRENT_TARGET=$$target PROGRAM=$(PROGRAM) $(MAKECMDGOALS); \
 	done
 
 $(SUB_TASKS): _do_all

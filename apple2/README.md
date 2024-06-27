@@ -1,3 +1,8 @@
+
+Please read the main README. This platform code now uses the new makefile(s) scripts created by Fenrock.
+
+
+
 API KEY
 This program requires an API KEY from openweathermap.org.
 1. Get your own API KEY. 
