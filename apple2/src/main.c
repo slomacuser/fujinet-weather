@@ -55,11 +55,11 @@ void main(void)
 				current_screen = 0;
 			case COM_WEATHER:		// weather
 				disp_weather(&wi);
-				disp_menu("F)orecast R)efresh U)nit L)ocation Q)uit");
+				disp_menu("F)orecast R)ef U)nit L)oc Q)uit  v1.1 ");
 				break;
 			case COM_FORECAST:		// forecast
 				disp_forecast(&fc, forecast_page);
-				disp_menu(" N)ext  B)ack  W)eather                 ");
+				disp_menu(" N)ext  B)ack  W)eather            v.1.1");
 				break;
 			default:
 				;
