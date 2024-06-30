@@ -795,15 +795,16 @@ void screen_forecast(unsigned char i, ForecastData *f, unsigned char foregroundC
     unsigned char iy[5] = {15, 55, 90, 128};
     unsigned char y = (i % 4) * 5;
     void *param = &udgs;
- 
+
     foregroundColor = VDP_INK_WHITE;
-    backgroundColor = VDP_INK_BLACK;
+    backgroundColor = VDP_INK_DARK_BLUE;
 
     if (y == 0)
     {
         console_ioctl(IOCTL_GENCON_SET_UDGS, &param);
         vdp_color(foregroundColor, backgroundColor, backgroundColor);
         clrscr();
+        screen_forecast_keys();
 
         gotoxy(x[1],y);
         vdp_color(backgroundColor, foregroundColor, foregroundColor);
