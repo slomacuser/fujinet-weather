@@ -29,6 +29,7 @@ void options_print()
     cprintf("maxPrecision:%d\n", (int) optData.maxPrecision);
     csleep(DEBUG_DELAY);
 }
+
 bool options_load(OptionsData *o)
 {
     int num_found = 0;
@@ -43,23 +44,26 @@ bool options_load(OptionsData *o)
     ak.app = APPKEY_APP_ID;
     ak.key = APPKEY_CONFIG_KEY;
 
-    eos_write_character_device(FUJI_DEV, ak, sizeof(ak));
-    if (eos_read_character_device(FUJI_DEV, response, sizeof(response)) == ACK)
+    EOS_WRITE_CHARACTER_DEVICE(FUJI_DEV, ak, sizeof(ak));
+    if (EOS_READ_CHARACTER_DEVICE(FUJI_DEV, response, sizeof(response)) == ACK)
     {
         DCB *dcb = eos_find_dcb(FUJI_DEV);
-
-        if (dcb->len != 1)
+        if (dcb != NULL)
         {
-            p = io_get_next_string(response, o->version, sizeof(o->version));
-            if (strncmp(o->version, OPTIONS_VERSION, sizeof(o->version)) == 0)
+            if (dcb->len != 1)
             {
-                p = io_get_next_long(p, &o->refreshIntervalMinutes);
-                p = io_get_next_int(p, &units);
-                o->units = units;
-                p = io_get_next_bool(p, &o->showRegion);
-                p = io_get_next_string(p, o->theme, sizeof(o->theme));
-                p = io_get_next_int(p, &o->maxPrecision);
-                ret = (p != NULL);
+                p = io_get_next_string(response, o->version, sizeof(o->version));
+                
+                if (strncmp(o->version, OPTIONS_VERSION, sizeof(o->version)) == 0)
+                {
+                    p = io_get_next_long(p, &o->refreshIntervalMinutes);
+                    p = io_get_next_int(p, &units);
+                    o->units = units;
+                    p = io_get_next_bool(p, &o->showRegion);
+                    p = io_get_next_string(p, o->theme, sizeof(o->theme));
+                    p = io_get_next_int(p, &o->maxPrecision);
+                    ret = (p != NULL);
+                }
             }
         }
     }
@@ -90,7 +94,7 @@ bool options_save(OptionsData *o)
         o->maxPrecision);
 
     strncpy2(ak.data, response, sizeof(ak.data));
-    ret =  (eos_write_character_device(FUJI_DEV, ak, sizeof(ak)) == ACK);
+    ret = (EOS_WRITE_CHARACTER_DEVICE(FUJI_DEV, ak, sizeof(ak)) == ACK);
 
     return ret;
 }

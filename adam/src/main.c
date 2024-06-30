@@ -20,6 +20,8 @@
 #include "screen.h"
 #include "state.h"
 
+bool forceRefresh;
+unsigned int timer;
 
 void main(void)
 {

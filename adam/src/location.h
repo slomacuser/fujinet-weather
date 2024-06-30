@@ -38,7 +38,7 @@ bool location_get_from_position(char *latitude, char *longitude);
 void location_print(void);
 bool location_parse_from_ip(void);
 void location_defaults(void);
-
+bool location_manual_request(void);
 void location(void);
 
 extern Location locData;

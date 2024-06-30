@@ -27,14 +27,16 @@ extern bool forceRefresh;
 
 /** LOCATION  */
 
-bool location_request(void)
+bool location_manual_request(void)
 {
     if (screen_location(&locData, &locData.forceIPLocation, &locData.forceManualLocation))
     {
         locData.locationFound = ! locData.forceIPLocation;
+
         if (!location_save(&locData))
+        {
             screen_location_could_not_save();
-        else
+        } else
             screen_location_saved();
     }
 }
@@ -45,25 +47,15 @@ void location_defaults(void)
     screen_location_load_defaults();
 
     strncpy2(locData.version,      LOCATION_VERSION, sizeof(locData.version));
-
     strncpy2(locData.city,         "Borden-Carleton", sizeof(locData.city));
-
     strncpy2(locData.region_code,  "PE", sizeof(locData.region_code));
-
     strncpy2(locData.country_code, "CA", sizeof(locData.country_code));
-
-    strncpy2(locData.latitude,    "46.2533283", sizeof(locData.latitude));
-
-    strncpy2(locData.longitude,   "-63.6931751", sizeof(locData.longitude));
-
-    locData.forceIPLocation = true;
-    locData.forceManualLocation = false;
-    locData.locationFound = false;
+    strncpy2(locData.latitude,     "46.2533283", sizeof(locData.latitude));
+    strncpy2(locData.longitude,    "-63.6931751", sizeof(locData.longitude));
+    locData.forceIPLocation      = true;
+    locData.forceManualLocation  = false;
+    locData.locationFound        = false;
     
-    if (! location_save(&locData))
-        screen_location_could_not_save();
-    else
-        screen_location_success();
 }
 
 void location_print(void)
@@ -91,8 +83,8 @@ bool location_load(Location *l)
     ak.app = APPKEY_APP_ID;
     ak.key = APPKEY_LOCATION_KEY;
 
-    eos_write_character_device(FUJI_DEV, ak, sizeof(ak));
-    if (eos_read_character_device(FUJI_DEV, response, sizeof(response)) == ACK)
+    EOS_WRITE_CHARACTER_DEVICE(FUJI_DEV, ak, sizeof(ak));
+    if (EOS_READ_CHARACTER_DEVICE(FUJI_DEV, response, sizeof(response)) == ACK)
     {
         DCB *dcb = eos_find_dcb(FUJI_DEV);
 
@@ -144,7 +136,7 @@ bool location_save(Location *l)
         (int) l->locationFound);
 
     strncpy2(ak.data, response, sizeof(ak.data));
-    ret =  (eos_write_character_device(FUJI_DEV, ak, sizeof(ak)) == ACK);
+    ret = (EOS_WRITE_CHARACTER_DEVICE(FUJI_DEV, ak, sizeof(ak)) == ACK);
 
     return ret;
 }
@@ -172,7 +164,7 @@ bool location_parse_from_position(void)
         return false;
     }
     debug_print(locData.longitude);
-    strcpy(locData.region_code, "");
+    strncpy(locData.region_code, "", sizeof(locData.region_code));
     
     if (io_json_query("address/country_code", locData.country_code, sizeof(locData.country_code)))
     {
@@ -212,29 +204,28 @@ bool location_parse_from_ip(void)
 #ifdef DISPLAY_DEBUG
     int i;
 #endif
-    unsigned char ip[43];
+    //unsigned char ip[43];
     unsigned char success[10];
-    bool detected = false;
+    bool detected = true;
 
-    io_json_query("success", success, sizeof(success));
+    detected = detected && (io_json_query("success", success, sizeof(success)) == 0);
     if (stricmp(success, "true") == 0)
     {
         detected = true;
 
-        io_json_query("latitude", locData.latitude, sizeof(locData.latitude));
+        detected = detected && (io_json_query("latitude", locData.latitude, sizeof(locData.latitude)) == 0);
 
-        io_json_query("longitude", locData.longitude, sizeof(locData.longitude));
+        detected = detected && (io_json_query("longitude", locData.longitude, sizeof(locData.longitude)) == 0);
 
         io_json_query("city", locData.city, sizeof(locData.city));
-
+        
         io_json_query("country_code", locData.country_code, sizeof(locData.country_code));
-
+        
         io_json_query("region_code", locData.region_code, sizeof(locData.region_code));
-
-        io_json_query("ip", ip, sizeof(ip));
+        
+        //io_json_query("/ip", ip, sizeof(ip));
 
     }
-
     return detected;
 
 }
@@ -280,17 +271,15 @@ bool location_ip_detect(void)
 
     detected = location_get_from_ip();
     
-    if (optData.units == UNKNOWN)
+    if (detected)
     {
-        if (locationIsImperial())
-            optData.units = IMPERIAL;
-        else
-            optData.units = METRIC;
-    }
-
-    if (!location_save(&locData))
-    {
-        screen_location_could_not_save();
+        if (optData.units == UNKNOWN)
+        {
+            if (locationIsImperial())
+                optData.units = IMPERIAL;
+            else
+                optData.units = METRIC;
+        }
     }
     return detected;
 
@@ -300,16 +289,36 @@ void location(void)
 {
 static bool firstTime = true;
 
+    forceRefresh = true;
+
     if (firstTime)
     {
         if (!location_load(&locData))
         {
             screen_location_load_failed();
             location_defaults();
-
         } else
         {
             firstTime = false;
+        }
+    }
+
+    if (locData.forceIPLocation == true)
+    {
+        locData.forceIPLocation = false;
+
+        if (! location_ip_detect() )
+        {
+            screen_location_could_not_ip_detect();
+            locData.forceManualLocation = true;
+            locData.locationFound = false;
+        } else
+        {
+            locData.locationFound = true;
+            if (!location_save(&locData))
+            {
+                screen_location_could_not_save();
+            }
         }
     }
 
@@ -317,27 +326,13 @@ static bool firstTime = true;
     {
         locData.forceIPLocation = false;
         locData.forceManualLocation = false;
-        location_request();
-        forceRefresh = true;
-    }
-
-    if (locData.forceIPLocation == true)
-    {
-        if (! location_ip_detect() )
-        {
-            screen_location_could_not_ip_detect();
-            locData.forceManualLocation = true;
-        } else
-        {
-            location_save(&locData);
-        }
-        locData.forceIPLocation = false;
+        location_manual_request();
+        location_save(&locData);
     }
 
     if (locData.locationFound)
     {
         state = WEATHER;
-        
     } else
     {
         screen_location_could_not_detect();
