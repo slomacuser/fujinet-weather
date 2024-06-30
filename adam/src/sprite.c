@@ -20,18 +20,6 @@ unsigned char sprite_counter = 0;
 unsigned char sprites[32 * 8]; // Length 256;
 
 
-#define SPRITE_SUNNY 0
-#define SPRITE_HALF_SUNNY 1
-#define SPRITE_CLOUD_SUN 2
-#define SPRITE_BLACK_GREY_CLOUD 3
-#define SPRITE_BLACK_GREY_CLOUD_RAIN 4
-#define SPRITE_SUN_CLOUD_RAIN 5
-#define SPRITE_CLOUD_LIGHTENING 6
-#define SPRITE_SNOW 7
-#define SPRITE_MIST 8
-
-
-
 
 const unsigned char spritedata[] = {
     // 0 Sunny
@@ -94,23 +82,23 @@ const unsigned char spritedata[] = {
 unsigned char get_sprite(char *c)
 {
     if (strcmp(c, "01d") == 0 || strcmp(c, "01n") == 0)
-        return ICON_CLEAR_SKY;
+        return SPRITE_CLEAR_SKY;
     else if (strcmp(c, "02d") == 0 || strcmp(c, "02n") == 0)
-        return ICON_FEW_CLOUDS;
+        return SPRITE_FEW_CLOUDS;
     else if (strcmp(c, "03d") == 0 || strcmp(c, "03n") == 0)
-        return ICON_SCATTERED_CLOUDS;
+        return SPRITE_SCATTERED_CLOUDS;
     else if (strcmp(c, "04d") == 0 || strcmp(c, "04n") == 0)
-        return ICON_BROKEN_CLOUDS;
+        return SPRITE_BROKEN_CLOUDS;
     else if (strcmp(c, "09d") == 0 || strcmp(c, "09n") == 0)
-        return ICON_SHOWER_RAIN;
+        return SPRITE_SHOWER_RAIN;
     else if (strcmp(c, "10d") == 0 || strcmp(c, "10n") == 0)
-        return ICON_RAIN;
+        return SPRITE_RAIN;
     else if (strcmp(c, "11d") == 0 || strcmp(c, "11n") == 0)
-        return ICON_THUNDERSTORM;
+        return SPRITE_THUNDERSTORM;
     else if (strcmp(c, "13d") == 0 || strcmp(c, "13n") == 0)
-        return ICON_SNOW;
+        return SPRITE_SNOW;
     else if (strcmp(c, "50d") == 0 || strcmp(c, "50n") == 0)
-        return ICON_MIST;
+        return SPRITE_MIST;
 }
 
 /*
@@ -142,222 +130,217 @@ void display_sprites(void)
 Saves a sprite for use, but does not display the sprite until display_sprites is called
 */
 
+
 void save_sprite(unsigned char x, unsigned char y, unsigned char icon, bool day)
 {
 
     switch (icon)
     {
-    case ICON_CLEAR_SKY: // clear sky
-        // Sun with clouds
+    case SPRITE_CLEAR_SKY: // clear sky
         sprite_attributes[sprite_counter].y = y;
         sprite_attributes[sprite_counter].x = x;
-        sprite_attributes[sprite_counter].sprite_pattern = day == true ? 0x00 : 32;
-        sprite_attributes[sprite_counter].color_code = 0x0A;
+        sprite_attributes[sprite_counter].sprite_pattern = day == true ? PATTERN_SUN_ALL_RAYS : PATTERN_MOON;
+        sprite_attributes[sprite_counter].color_code = SPRITE_COLOR_DARK_YELLOW;
         sprite_attributes[sprite_counter].reserved = 0;
         sprite_attributes[sprite_counter].early_clock = 0;
         sprite_counter++;
         break;
-    case ICON_FEW_CLOUDS: // few clouds
 
+    case SPRITE_FEW_CLOUDS: // few clouds
         sprite_attributes[sprite_counter].y = y;
         sprite_attributes[sprite_counter].x = x;
-        sprite_attributes[sprite_counter].sprite_pattern = 0x08;
-        sprite_attributes[sprite_counter].color_code = 0x0F;
+        sprite_attributes[sprite_counter].sprite_pattern = PATTERN_CLOUD;
+        sprite_attributes[sprite_counter].color_code = SPRITE_COLOR_WHITE;
         sprite_attributes[sprite_counter].reserved = 0;
         sprite_attributes[sprite_counter].early_clock = 0;
         sprite_counter++;
 
         sprite_attributes[sprite_counter].y = y;
         sprite_attributes[sprite_counter].x = x;
-        sprite_attributes[sprite_counter].sprite_pattern = day == true ? 0x04 : 32;
-        sprite_attributes[sprite_counter].color_code = 0x0A;
+        sprite_attributes[sprite_counter].sprite_pattern = day == true ? PATTERN_SUN_RAYS_ABOVE : PATTERN_MOON;
+        sprite_attributes[sprite_counter].color_code = SPRITE_COLOR_DARK_YELLOW;
+        sprite_attributes[sprite_counter].reserved = 0;
+        sprite_attributes[sprite_counter].early_clock = 0;
+        sprite_counter++;
+        break;
+
+    case SPRITE_SCATTERED_CLOUDS: // Scattered clouds
+        sprite_attributes[sprite_counter].y = y;
+        sprite_attributes[sprite_counter].x = x;
+        sprite_attributes[sprite_counter].sprite_pattern = PATTERN_CLOUD_HIGH_TO_RIGHT;
+        sprite_attributes[sprite_counter].color_code = SPRITE_COLOR_WHITE;
+        sprite_attributes[sprite_counter].reserved = 0;
+        sprite_attributes[sprite_counter].early_clock = 0;
+        sprite_counter++;
+        break;
+
+    case SPRITE_BROKEN_CLOUDS: // broken clouds
+        sprite_attributes[sprite_counter].y = y;
+        sprite_attributes[sprite_counter].x = x;
+        sprite_attributes[sprite_counter].sprite_pattern = PATTERN_CLOUD_HIGH_TO_RIGHT;
+        sprite_attributes[sprite_counter].color_code = SPRITE_COLOR_GRAY;
+        sprite_attributes[sprite_counter].reserved = 0;
+        sprite_attributes[sprite_counter].early_clock = 0;
+        sprite_counter++;
+
+        sprite_attributes[sprite_counter].y = y;
+        sprite_attributes[sprite_counter].x = x;
+        sprite_attributes[sprite_counter].sprite_pattern = PATTERN_CLOUD_HIGHER_TO_RIGHT;
+        sprite_attributes[sprite_counter].color_code = SPRITE_COLOR_BLACK;
         sprite_attributes[sprite_counter].reserved = 0;
         sprite_attributes[sprite_counter].early_clock = 0;
         sprite_counter++;
 
         break;
-    case ICON_SCATTERED_CLOUDS: // Scattered clouds
+
+    case SPRITE_SHOWER_RAIN: // shower rain
         sprite_attributes[sprite_counter].y = y;
         sprite_attributes[sprite_counter].x = x;
-        sprite_attributes[sprite_counter].sprite_pattern = 0x10;
-        sprite_attributes[sprite_counter].color_code = 0x0F;
+        sprite_attributes[sprite_counter].sprite_pattern = PATTERN_RAIN_SHORT;
+        sprite_attributes[sprite_counter].color_code = SPRITE_COLOR_DARK_BLUE;
         sprite_attributes[sprite_counter].reserved = 0;
         sprite_attributes[sprite_counter].early_clock = 0;
         sprite_counter++;
-
-        break;
-    case ICON_BROKEN_CLOUDS: // broken clouds
-        sprite_attributes[sprite_counter].y = y;
-        sprite_attributes[sprite_counter].x = x;
-        sprite_attributes[sprite_counter].sprite_pattern = 16;
-        sprite_attributes[sprite_counter].color_code = 0x0e;
-        sprite_attributes[sprite_counter].reserved = 0;
-        sprite_attributes[sprite_counter].early_clock = 0;
-        sprite_counter++;
-
-        sprite_attributes[sprite_counter].y = y;
-        sprite_attributes[sprite_counter].x = x;
-        sprite_attributes[sprite_counter].sprite_pattern = 20;
-        sprite_attributes[sprite_counter].color_code = 0x01;
-        sprite_attributes[sprite_counter].reserved = 0;
-        sprite_attributes[sprite_counter].early_clock = 0;
-        sprite_counter++;
-
-
-        break;
-    case ICON_SHOWER_RAIN: // shower rain
-        sprite_attributes[sprite_counter].y = y;
-        sprite_attributes[sprite_counter].x = x;
-        sprite_attributes[sprite_counter].sprite_pattern = 56;
-        sprite_attributes[sprite_counter].color_code = 0x04;
-        sprite_attributes[sprite_counter].reserved = 0;
-        sprite_attributes[sprite_counter].early_clock = 0;
-        sprite_counter++;
-
 
         if (day == true)
         {
             sprite_attributes[sprite_counter].y = y;
             sprite_attributes[sprite_counter].x = x;
-            sprite_attributes[sprite_counter].sprite_pattern = 16;
-            sprite_attributes[sprite_counter].color_code = 0x0e;
+            sprite_attributes[sprite_counter].sprite_pattern = PATTERN_CLOUD_HIGH_TO_RIGHT;
+            sprite_attributes[sprite_counter].color_code = SPRITE_COLOR_GRAY;
             sprite_attributes[sprite_counter].reserved = 0;
             sprite_attributes[sprite_counter].early_clock = 0;
             sprite_counter++;
 
             sprite_attributes[sprite_counter].y = y;
             sprite_attributes[sprite_counter].x = x;
-            sprite_attributes[sprite_counter].sprite_pattern = 20;
-            sprite_attributes[sprite_counter].color_code = 0x01;
+            sprite_attributes[sprite_counter].sprite_pattern = PATTERN_CLOUD_HIGHER_TO_RIGHT;
+            sprite_attributes[sprite_counter].color_code = SPRITE_COLOR_BLACK;
             sprite_attributes[sprite_counter].reserved = 0;
             sprite_attributes[sprite_counter].early_clock = 0;
             sprite_counter++;
-
-
         }
         else
         {
             sprite_attributes[sprite_counter].y = y;
             sprite_attributes[sprite_counter].x = x;
-            sprite_attributes[sprite_counter].sprite_pattern = 08;
-            sprite_attributes[sprite_counter].color_code = 0x0f;
+            sprite_attributes[sprite_counter].sprite_pattern = PATTERN_CLOUD;
+            sprite_attributes[sprite_counter].color_code = SPRITE_COLOR_WHITE;
             sprite_attributes[sprite_counter].reserved = 0;
             sprite_attributes[sprite_counter].early_clock = 0;
             sprite_counter++;
 
             sprite_attributes[sprite_counter].y = y;
             sprite_attributes[sprite_counter].x = x;
-            sprite_attributes[sprite_counter].sprite_pattern = day == true ? 0x04 : 32;
-            sprite_attributes[sprite_counter].color_code = 0x0A;
+            sprite_attributes[sprite_counter].sprite_pattern = day == true ? PATTERN_SUN_RAYS_ABOVE : PATTERN_MOON;
+            sprite_attributes[sprite_counter].color_code = SPRITE_COLOR_DARK_YELLOW;
             sprite_attributes[sprite_counter].reserved = 0;
             sprite_attributes[sprite_counter].early_clock = 0;
             sprite_counter++;
-
         }
         break;
-    case ICON_RAIN: // rain
+
+    case SPRITE_RAIN: // rain
         sprite_attributes[sprite_counter].y = y;
         sprite_attributes[sprite_counter].x = x;
-        sprite_attributes[sprite_counter].sprite_pattern = 56;
-        sprite_attributes[sprite_counter].color_code = 0x04;
+        sprite_attributes[sprite_counter].sprite_pattern = PATTERN_RAIN_SHORT;
+        sprite_attributes[sprite_counter].color_code = SPRITE_COLOR_DARK_BLUE;
         sprite_attributes[sprite_counter].reserved = 0;
         sprite_attributes[sprite_counter].early_clock = 0;
         sprite_counter++;
 
         sprite_attributes[sprite_counter].y = y;
         sprite_attributes[sprite_counter].x = x;
-        sprite_attributes[sprite_counter].sprite_pattern = 8;
-        sprite_attributes[sprite_counter].color_code = 0x0f;
+        sprite_attributes[sprite_counter].sprite_pattern = PATTERN_CLOUD;
+        sprite_attributes[sprite_counter].color_code = SPRITE_COLOR_WHITE;
         sprite_attributes[sprite_counter].reserved = 0;
         sprite_attributes[sprite_counter].early_clock = 0;
         sprite_counter++;
 
         sprite_attributes[sprite_counter].y = y;
         sprite_attributes[sprite_counter].x = x;
-        sprite_attributes[sprite_counter].sprite_pattern = 4;
-        sprite_attributes[sprite_counter].color_code = 0x0A;
+        sprite_attributes[sprite_counter].sprite_pattern = day == true ? PATTERN_SUN_RAYS_ABOVE : PATTERN_MOON;
+        sprite_attributes[sprite_counter].color_code = SPRITE_COLOR_DARK_YELLOW;
         sprite_attributes[sprite_counter].reserved = 0;
         sprite_attributes[sprite_counter].early_clock = 0;
         sprite_counter++;
-
-        break;
-    case ICON_THUNDERSTORM: // thunderstorm
-        sprite_attributes[sprite_counter].y = y;
-        sprite_attributes[sprite_counter].x = x;
-        sprite_attributes[sprite_counter].sprite_pattern = 48;
-        sprite_attributes[sprite_counter].color_code = 0x0A;
-        sprite_attributes[sprite_counter].reserved = 0;
-        sprite_attributes[sprite_counter].early_clock = 0;
-        sprite_counter++;
-
-        sprite_attributes[sprite_counter].y = y;
-        sprite_attributes[sprite_counter].x = x;
-        sprite_attributes[sprite_counter].sprite_pattern = 16;
-        sprite_attributes[sprite_counter].color_code = 0x0e;
-        sprite_attributes[sprite_counter].reserved = 0;
-        sprite_attributes[sprite_counter].early_clock = 0;
-        sprite_counter++;
-
-        sprite_attributes[sprite_counter].y = y;
-        sprite_attributes[sprite_counter].x = x;
-        sprite_attributes[sprite_counter].sprite_pattern = 20;
-        sprite_attributes[sprite_counter].color_code = 0x01;
-        sprite_attributes[sprite_counter].reserved = 0;
-        sprite_attributes[sprite_counter].early_clock = 0;
-        sprite_counter++;
-
-        sprite_attributes[sprite_counter].y = y;
-        sprite_attributes[sprite_counter].x = x;
-        sprite_attributes[sprite_counter].sprite_pattern = 56;
-        sprite_attributes[sprite_counter].color_code = 0x04;
-        sprite_attributes[sprite_counter].reserved = 0;
-        sprite_attributes[sprite_counter].early_clock = 0;
-        sprite_counter++;
-
         break;
 
-    case ICON_SNOW: // snow
+    case SPRITE_THUNDERSTORM: // thunderstorm
         sprite_attributes[sprite_counter].y = y;
         sprite_attributes[sprite_counter].x = x;
-        sprite_attributes[sprite_counter].sprite_pattern = 60;
-        sprite_attributes[sprite_counter].color_code = 0x0e;
+        sprite_attributes[sprite_counter].sprite_pattern = PATTERN_LIGHTENING_TO_RIGHT;
+        sprite_attributes[sprite_counter].color_code = SPRITE_COLOR_DARK_YELLOW;
         sprite_attributes[sprite_counter].reserved = 0;
         sprite_attributes[sprite_counter].early_clock = 0;
         sprite_counter++;
 
         sprite_attributes[sprite_counter].y = y;
         sprite_attributes[sprite_counter].x = x;
-        sprite_attributes[sprite_counter].sprite_pattern = 16;
-        sprite_attributes[sprite_counter].color_code = 0x0f;
+        sprite_attributes[sprite_counter].sprite_pattern = PATTERN_CLOUD_HIGH_TO_RIGHT;
+        sprite_attributes[sprite_counter].color_code = SPRITE_COLOR_GRAY;
         sprite_attributes[sprite_counter].reserved = 0;
         sprite_attributes[sprite_counter].early_clock = 0;
         sprite_counter++;
 
         sprite_attributes[sprite_counter].y = y;
         sprite_attributes[sprite_counter].x = x;
-        sprite_attributes[sprite_counter].sprite_pattern = 20;
-        sprite_attributes[sprite_counter].color_code = 0x01;
-        sprite_attributes[sprite_counter].reserved = 0;
-        sprite_attributes[sprite_counter].early_clock = 0;
-        sprite_counter++;
-
-    case ICON_MIST: // mist
-        sprite_attributes[sprite_counter].y = y;
-        sprite_attributes[sprite_counter].x = x;
-        sprite_attributes[sprite_counter].sprite_pattern = 28;
-        sprite_attributes[sprite_counter].color_code = 0x0f;
+        sprite_attributes[sprite_counter].sprite_pattern = PATTERN_CLOUD_HIGHER_TO_RIGHT;
+        sprite_attributes[sprite_counter].color_code = SPRITE_COLOR_BLACK;
         sprite_attributes[sprite_counter].reserved = 0;
         sprite_attributes[sprite_counter].early_clock = 0;
         sprite_counter++;
 
         sprite_attributes[sprite_counter].y = y;
         sprite_attributes[sprite_counter].x = x;
-        sprite_attributes[sprite_counter].sprite_pattern = 24;
-        sprite_attributes[sprite_counter].color_code = 0x0e;
+        sprite_attributes[sprite_counter].sprite_pattern = PATTERN_RAIN_SHORT;
+        sprite_attributes[sprite_counter].color_code = SPRITE_COLOR_DARK_BLUE;
+        sprite_attributes[sprite_counter].reserved = 0;
+        sprite_attributes[sprite_counter].early_clock = 0;
+        sprite_counter++;
+        break;
+
+    case SPRITE_SNOW: // snow
+        sprite_attributes[sprite_counter].y = y;
+        sprite_attributes[sprite_counter].x = x;
+        sprite_attributes[sprite_counter].sprite_pattern = PATTERN_SNOW;
+        sprite_attributes[sprite_counter].color_code = SPRITE_COLOR_GRAY;
         sprite_attributes[sprite_counter].reserved = 0;
         sprite_attributes[sprite_counter].early_clock = 0;
         sprite_counter++;
 
+        sprite_attributes[sprite_counter].y = y;
+        sprite_attributes[sprite_counter].x = x;
+        sprite_attributes[sprite_counter].sprite_pattern = PATTERN_CLOUD_HIGH_TO_RIGHT;
+        sprite_attributes[sprite_counter].color_code = SPRITE_COLOR_WHITE;
+        sprite_attributes[sprite_counter].reserved = 0;
+        sprite_attributes[sprite_counter].early_clock = 0;
+        sprite_counter++;
+
+        sprite_attributes[sprite_counter].y = y;
+        sprite_attributes[sprite_counter].x = x;
+        sprite_attributes[sprite_counter].sprite_pattern = PATTERN_CLOUD_HIGHER_TO_RIGHT;
+        sprite_attributes[sprite_counter].color_code = SPRITE_COLOR_BLACK;
+        sprite_attributes[sprite_counter].reserved = 0;
+        sprite_attributes[sprite_counter].early_clock = 0;
+        sprite_counter++;
+
+    case SPRITE_MIST: // mist
+        sprite_attributes[sprite_counter].y = y;
+        sprite_attributes[sprite_counter].x = x;
+        sprite_attributes[sprite_counter].sprite_pattern = PATTERN_MIST;
+        sprite_attributes[sprite_counter].color_code = SPRITE_COLOR_WHITE;
+        sprite_attributes[sprite_counter].reserved = 0;
+        sprite_attributes[sprite_counter].early_clock = 0;
+        sprite_counter++;
+
+        sprite_attributes[sprite_counter].y = y;
+        sprite_attributes[sprite_counter].x = x;
+        sprite_attributes[sprite_counter].sprite_pattern = PATTERN_DOTTED_CLOUD;
+        sprite_attributes[sprite_counter].color_code = SPRITE_COLOR_GRAY;
+        sprite_attributes[sprite_counter].reserved = 0;
+        sprite_attributes[sprite_counter].early_clock = 0;
+        sprite_counter++;
         break;
     }
 }

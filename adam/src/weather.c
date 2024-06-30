@@ -26,8 +26,8 @@ extern OptionsData optData;
 extern Location locData;
 
 unsigned long dt, sunrise, sunset;
-unsigned short timer = 65535;
-bool forceRefresh = true;
+extern bool forceRefresh;
+extern unsigned int timer;
 
 char date_txt[32];
 char sunrise_txt[16];
@@ -101,7 +101,7 @@ Returns
 */
 bool weather_parse(void)
 {
-    int success = 1;
+    bool success = true;
     char units[14];
     char cc = 'C';
     unsigned char res;
@@ -110,131 +110,159 @@ bool weather_parse(void)
     char url[256];
     char *p;
 
-    strcpy(units, "metric");
+    strncpy2(units, "metric", sizeof(units));
     if (optData.units == IMPERIAL)
-        strcpy(units, "imperial");
+        strncpy2(units, "imperial", sizeof(units));
 
-    // if any json fails, then have default values
-    dt = 0;
-    sunrise = 0;
-    sunset = 0;
-    strcpy(temp, failure);
-    strcpy(feels_like, failure);
-    timezone_offset = 0;
-    strcpy(pressure, failure);
-    strcpy(humidity, failure);
-    strcpy(dew_point, failure);
-    strcpy(clouds, failure);
-    strcpy(visibility, failure);
-    strcpy(wind_speed, failure);
-    strcpy(wind_dir, failure);
-    strcpy(description, failure);
-    icon = ICON_CLEAR_SKY;
-   
 
-    // http://api.openweathermap.org/data/2.5/onecall?lat=44.62335968017578&lon=-63.57278060913086&exclude=minutely,hourly,alerts,daily&units=%s&appid=2e8616654c548c26bc1c86b1615ef7f1
+    // http://api.openweathermap.org/data/2.5/onecall?lat=44.62335968017578&lon=-63.57278060913086&exclude=minutely,hourly,alerts,daily&units=metric&appid=2e8616654c548c26bc1c86b1615ef7f1
 
     snprintf(url, sizeof(url),  "N:HTTP://%s//data/2.5/onecall?lat=%s&lon=%s&exclude=minutely,hourly,alerts,daily&units=%s&appid=%s", 
                                 OW_API, locData.latitude, locData.longitude, units,
                                 OW_KEY);
-
     if (io_json_open(url))
     {
         return false;
     }
 
+
     // Grab the relevant bits
     if (io_json_query("/current/dt", tmp, sizeof(tmp)))
-        return false;
+    {
+        success = false;
+        strncpy2(tmp, "", sizeof(tmp));
+    }
     dt = atol(tmp);
 
 
     if (io_json_query("/timezone", tmp, sizeof(tmp)))
-        return false;
+    {
+        success = false;
+        strncpy2(tmp, "", sizeof(tmp));
+    }
     ellipsizeString( (char *) &tmp[0], &timezone[0], sizeof(timezone));
 
 
     if (io_json_query("/current/sunrise", tmp, sizeof(tmp)))
-        return false;
+    {
+        success = false;
+        strncpy2(tmp, "", sizeof(tmp));
+    }
     sunrise = atol(tmp);
 
 
     if (io_json_query("/current/sunset", tmp, sizeof(tmp)))
-        return false;
+    {
+        success = false;
+        strncpy2(tmp, "", sizeof(tmp));
+    }
     sunset = atol(tmp);
 
 
     if (io_json_query("/current/temp", tmp, sizeof(tmp)))
-        return false;
-    io_decimals(tmp,optData.maxPrecision);
-    
-    sprintf(temp, "%s*%c", tmp, optData.units == IMPERIAL ? 'F' : 'C');
+    {
+        success = false;
+        strncpy2(tmp, failure, sizeof(tmp));
+    }
+    io_decimals(tmp,optData.maxPrecision);   
+    snprintf(temp, sizeof(temp), "%s*%c", tmp, optData.units == IMPERIAL ? 'F' : 'C');
 
 
     if (io_json_query("/current/feels_like", tmp, sizeof(tmp)))
-        return false;
+    {
+        success = false;
+        strncpy2(tmp, failure, sizeof(tmp));
+    }
     io_decimals(tmp,optData.maxPrecision);
-    sprintf(feels_like, "%s *%c", tmp, optData.units == IMPERIAL ? 'F' : 'C');
+    snprintf(feels_like, sizeof(feels_like), "%s *%c", tmp, optData.units == IMPERIAL ? 'F' : 'C');
 
 
     if (io_json_query("/timezone_offset", tmp, sizeof(tmp)))
-        return false;
+    {
+        success = false;
+        strncpy2(tmp, "", sizeof(tmp));
+    }
     timezone_offset = atoi(tmp);
 
 
     if (io_json_query("/current/pressure", tmp, sizeof(tmp)))
-        return false;
-
+    {
+        success = false;
+        strncpy2(tmp, "", sizeof(tmp));
+    }
     if (optData.units == IMPERIAL)
         weather_hpa_to_inhg(tmp);
-
-    sprintf(pressure, "%s %s", tmp, optData.units == IMPERIAL ? "\"Hg" : "mPa");
+    snprintf(pressure, sizeof(pressure), "%s %s", tmp, optData.units == IMPERIAL ? "\"Hg" : "mPa");
 
 
     if (io_json_query("/current/humidity", tmp, sizeof(tmp)))
-        return false;
-    sprintf(humidity, "%s%%", tmp);
+    {
+        success = false;
+        strncpy2(tmp, failure, sizeof(tmp));
+    }
+    snprintf(humidity, sizeof(humidity), "%s%%", tmp);
 
 
     if (io_json_query("/current/dew_point", tmp, sizeof(tmp)))
-        return false;
-    sprintf(dew_point, "%s *%c", tmp, optData.units == IMPERIAL ? 'F' : 'C');
+    {
+        success = false;
+        strncpy2(tmp, failure, sizeof(tmp));
+    }
+    snprintf(dew_point, sizeof(dew_point), "%s *%c", tmp, optData.units == IMPERIAL ? 'F' : 'C');
 
 
     if (io_json_query("/current/clouds", tmp, sizeof(tmp)))
-        return false;
-    sprintf(clouds, "%s%%", tmp);
+    {
+        success = false;
+        strncpy2(tmp, failure, sizeof(tmp));
+    }
+    snprintf(clouds, sizeof(clouds), "%s%%", tmp);
 
 
     if (io_json_query("/current/visibility", tmp, sizeof(tmp)))
-        return false;
-    sprintf(visibility, "%d %s", atoi(tmp) / 1000, optData.units == IMPERIAL ? "mi" : "km");
+    {
+        success = false;
+        strncpy2(tmp, "0", sizeof(tmp));
+    }
+    snprintf(visibility, sizeof(visibility), "%d %s", atoi(tmp) / 1000, optData.units == IMPERIAL ? "mi" : "km");
 
 
     if (io_json_query("/current/wind_speed", tmp, sizeof(tmp)))
-        return false;
-    sprintf(wind_speed, "%s %s", tmp, optData.units == IMPERIAL ? "mph" : "kph");
+    {
+        success = false;
+        strncpy2(tmp, failure, sizeof(tmp));
+    }
+    snprintf(wind_speed, sizeof(wind_speed), "%s %s", tmp, optData.units == IMPERIAL ? "mph" : "kph");
 
 
     if (io_json_query("/current/wind_deg", tmp, sizeof(tmp)))
-        return false;
-    sprintf(wind_dir, "%s", degToDirection(atoi(tmp)));
+    {
+        success = false;
+        strncpy2(tmp, failure, sizeof(tmp));
+    }
+    snprintf(wind_dir, sizeof(wind_dir), "%s", degToDirection(atoi(tmp)));
 
 
     if (io_json_query("/current/weather/0/description", tmp, sizeof(tmp)))
-        return false;
-    sprintf(description, "%s", tmp);
-    strcpy(description, strupr(description));
+    {
+        success = false;
+        strncpy2(tmp, failure, sizeof(tmp));
+    }
+    snprintf(description, sizeof(description), "%s", strupr(tmp));
 
 
     if (io_json_query("/current/weather/0/icon", tmp, sizeof(tmp)))
-        return false;
+    {
+        success = false;
+        strncpy2(tmp, "01d", sizeof(tmp));
+    }
     icon = get_sprite(tmp);
+
 
     // Close connection
     io_json_close();
 
-    return true;
+    return success;
 }
 
 
@@ -245,7 +273,7 @@ unsigned char bg, fg;
 static  bool firstTime = true;    
 static  FUJI_TIME future_time;
 static  FUJI_TIME adjust_time;
-static  FUJI_TIME current_time;
+
 
     if (firstTime)
     {
@@ -253,19 +281,17 @@ static  FUJI_TIME current_time;
         io_time(&future_time);
     }
 
-    if (time_reached(&future_time))
+    if (time_reached(&future_time) || forceRefresh)
     {
         forceRefresh = false;
-
-        io_time(&current_time);
         memset(adjust_time, 0, sizeof(FUJI_TIME));
 
-        adjust_time.minute = optData.refreshIntervalMinutes;
-        add_time(&future_time, &current_time, &adjust_time);
+        adjust_time.minute = (unsigned char) optData.refreshIntervalMinutes;
+        add_time(&future_time, &future_time, &adjust_time);
 
         screen_weather_parsing();
 
-        if (!weather_parse())
+        if (! weather_parse())
             screen_weather_could_not_get();
 
         weather_date(date_txt,         dt, atoi(timezone_offset));
@@ -281,9 +307,9 @@ static  FUJI_TIME current_time;
 
         screen_daily(date_txt, icon, temp, pressure, description, loc, wind_txt, feels_like, 
                      dew_point, visibility, timezone, sunrise_txt, sunset_txt, humidity, clouds, 
-                     time_txt, fg, bg, dayNight, current_time, future_time);
+                     time_txt, fg, bg, dayNight, &future_time);
     }
-    
+
     input_init();
 
     screen_weather_keys();
@@ -291,18 +317,21 @@ static  FUJI_TIME current_time;
     timer = 65535;
     while (timer > 0)
     {
-        if (input_weather() || forceRefresh)
-            io_time(&future_time);
-
-        csleep(1);
+        if (input_weather())
+        {
+            if (forceRefresh)
+                io_time(&future_time);
+            
+            break; // to allow input_init to be called again
+        }
 
         if ((timer % CHECK_TIME_FREQUENCY) == 0)
         {
-            io_time(&current_time);
-            //screen_time(&current_time, &future_time, fg, bg);
             if (time_reached(&future_time))
                 break;
         }
+
+        csleep(1);
         timer--;
     }
 }

@@ -14,16 +14,33 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+// This allows me to run this on an emulator
+//#define NO_FUJI
+
+#ifdef NO_FUJI
+
+#define EOS_WRITE_CHARACTER_DEVICE FAKE_eos_write_character_device
+#define EOS_READ_CHARACTER_DEVICE  FAKE_eos_read_character_device
+unsigned char FAKE_eos_write_character_device(unsigned char dev, void *buf, unsigned short len);
+unsigned char FAKE_eos_read_character_device(unsigned char dev, void *buf, unsigned short len);
+
+#else
+
+#define EOS_WRITE_CHARACTER_DEVICE eos_write_character_device
+#define EOS_READ_CHARACTER_DEVICE  eos_read_character_device
+
+#endif
+
+
+
 #define DISPLAY_DEBUG 1
-#define DEBUG_DELAY (400)
+#define DEBUG_DELAY   (400)
 
 #define MAX_APP_DATA (128)
 #define MAX_URL      (256)
 #define MAX_QUERY    (128)
 
 extern unsigned char response[1024];
-
-
 
 typedef struct
 {
@@ -167,5 +184,4 @@ Parameters
  char *io_get_next_long(char *start, long *result);
  char *io_get_next_bool(char *start, bool *result);
 
-
-#endif /* IO_H */
+    #endif /* IO_H */

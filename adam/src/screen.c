@@ -29,9 +29,6 @@ extern unsigned char response[1024];
 
 extern OptionsData optData;
 extern Location locData;
-  
-FUJI_TIME current_time;
-
 
 // udgs = user defined graphics set
 const unsigned char udgs[] = {
@@ -365,7 +362,7 @@ bool screen_location(Location *l, bool *autoip, bool *manual)
         response[strlen(response) - 1] = '\0';
         if (strcmp(response, "") == 0)
         {
-            strcpy(response, l->latitude);
+            strncpy2(response, l->latitude, sizeof(response));
             break;
         }
 
@@ -398,7 +395,7 @@ bool screen_location(Location *l, bool *autoip, bool *manual)
         response[strlen(response) - 1] = '\0';
         if (strcmp(response, "") == 0)
         {
-            strcpy(response, l->longitude);
+            strncpy2(response, l->longitude, sizeof(response));
             break;
         }
 
@@ -456,61 +453,7 @@ bool screen_location(Location *l, bool *autoip, bool *manual)
     return true;
 }
 
-bool screen_options(OptionsData *o)
-{
-    unsigned char fg = VDP_INK_BLACK;
-    unsigned char bg = VDP_INK_CYAN;
-    void *param = &udgs;
-    int y = 10;
-    long value;
 
-    
-    console_ioctl(IOCTL_GENCON_SET_UDGS, &param);
-    vdp_color(fg, bg, bg);
-    clrscr();
-
-    clear_all_sprites();
-
-    smartkeys_display(NULL, NULL, NULL, NULL, NULL, NULL);
-    vdp_color(fg, bg, bg);
-
-    cprintf("*** PERFORMANCE SETTINGS *** \n\n");
-
-    while(1)
-    {
-        screen_clear_lines(y,4);
-        cprintf("Frequency of weather/forecast\nupdates in minutes?\n(<enter for %ld>\n", o->refreshIntervalMinutes);
-        smartkeys_status("Frequency of weather/forecast updates in minutes?\nBetween 10 and 1380 minutes");
-        vdp_color(fg, bg, bg);
-        gets(response);
-
-        // remove newline
-        response[strlen(response) - 1] = '\0';
-
-        if (strlen(response) == 0)
-            return true;
-
-        if (! is_number, false)
-        {
-            continue;
-        } else
-        {
-            value = atol(response);
-            if (value < 10)
-                continue;
-            if (value > 1380)
-                continue;
-
-            break;
-        }
-
-    }
-
-    value = atol(response);
-    o->refreshIntervalMinutes = value;
-
-    return true;
-}
 
 
 /* ***************************************************************************** */
@@ -521,7 +464,7 @@ bool screen_options(OptionsData *o)
 
 void screen_daily(char *date, unsigned char icon, char *temperature, char *pressure, char *description, char *location, char *wind, char *feels, char *dew, char *visibility, char *timezone,
                   char *sunrise, char *sunset, char *humidity, char *clouds, char *time, unsigned char foregroundColor, unsigned char backgroundColor, bool day,
-                  FUJI_TIME *current, FUJI_TIME *future)
+                  FUJI_TIME *future)
 {
     void *param = &udgs;
     int x_start;
@@ -533,9 +476,9 @@ void screen_daily(char *date, unsigned char icon, char *temperature, char *press
     clear_all_sprites();
 
     if (optData.units == IMPERIAL)
-        strcpy(tmp, "  SHOW\n CELSIUS");
+        strncpy2(tmp, "  SHOW\n CELSIUS", sizeof(tmp));
     else
-        strcpy(tmp, "  SHOW\nFARENHEIT");
+        strncpy2(tmp, "  SHOW\nFARENHEIT", sizeof(tmp));
 
     smartkeys_display("  OPTIONS", NULL, "LOCATION", " SHOW\nFORECAST", tmp, " REFRESH");
 
@@ -579,12 +522,13 @@ void screen_welcome(void)
     // Use custom font
     console_ioctl(IOCTL_GENCON_SET_UDGS, &param);
     smartkeys_set_mode();
+    smartkeys_sound_init();
 
-             // Fujinet Logo
-    printf("\x20\x20\x20\x20\x20\x9A\x9B\x9C\x20\x20\x20\x20\x20       OPEN WEATHER");
-    printf("\x80\x81\x82\x83\x84\x94\x95\x96\x8A\x8B\x8C\x8D\x8e       CLIENT " CLIENT_VERSION "\n");
-    printf("\x85\x86\x87\x88\x89\x97\x98\x99\x8F\x90\x91\x92\x93           for\n");
-    printf("\x20\x20\x20\x20\x20\x20\x9D\x9E\x9F\x20\x20\x20\x20       COLECO  ADAM\n");
+        // Fujinet Logo
+    cprintf("\x20\x20\x20\x20\x20\x9A\x9B\x9C\x20\x20\x20\x20\x20       OPEN WEATHER");
+    cprintf("\x80\x81\x82\x83\x84\x94\x95\x96\x8A\x8B\x8C\x8D\x8e       CLIENT " CLIENT_VERSION "\n");
+    cprintf("\x85\x86\x87\x88\x89\x97\x98\x99\x8F\x90\x91\x92\x93           for\n");
+    cprintf("\x20\x20\x20\x20\x20\x20\x9D\x9E\x9F\x20\x20\x20\x20       COLECO  ADAM\n");
 }
 
 /* ***************************************************************************** */
@@ -592,6 +536,61 @@ void screen_welcome(void)
 /* ****************************       OPTIONS          ************************* */
 /* ***************************************************************************** */
 /* ***************************************************************************** */
+
+bool screen_options(OptionsData *o)
+{
+    unsigned char fg = VDP_INK_BLACK;
+    unsigned char bg = VDP_INK_CYAN;
+    void *param = &udgs;
+    int y = 10;
+    long value;
+
+    console_ioctl(IOCTL_GENCON_SET_UDGS, &param);
+    vdp_color(fg, bg, bg);
+    clrscr();
+
+    clear_all_sprites();
+
+    smartkeys_display(NULL, NULL, NULL, NULL, NULL, NULL);
+    vdp_color(fg, bg, bg);
+
+    cprintf("*** PERFORMANCE SETTINGS *** \n\n");
+
+    while (1)
+    {
+        screen_clear_lines(y, 4);
+        cprintf("Frequency of weather/forecast\nupdates in minutes?\n(<enter for %ld>\n", o->refreshIntervalMinutes);
+        smartkeys_status("Frequency of weather/forecast updates in minutes?\nBetween 10 and 255 minutes");
+        vdp_color(fg, bg, bg);
+        gets(response);
+
+        // remove newline
+        response[strlen(response) - 1] = '\0';
+
+        if (strlen(response) == 0)
+            return true;
+
+        if (!is_number, false)
+        {
+            continue;
+        }
+        else
+        {
+            value = atol(response);
+            if (value < 10)
+                continue;
+            if (value > 255)
+                continue;
+
+            break;
+        }
+    }
+
+    value = atol(response);
+    o->refreshIntervalMinutes = value;
+
+    return true;
+}
 
 
 void screen_options_init(void)
@@ -730,6 +729,8 @@ void screen_location_could_not_detect(void)
 
 void screen_current_time(void)
 {
+    FUJI_TIME current_time;
+
     io_time(&current_time);
     snprintf(response, sizeof(response),  "Compile Time: " __DATE__ " "__TIME__ "\nTime: %2u%02u/%02u/%02u %02u:%02u:%02u\n", 
     (unsigned int) current_time.century, (unsigned int) current_time.year,(unsigned int) current_time.month, (unsigned int) current_time.day, 
@@ -787,8 +788,7 @@ void screen_forecast_parsing(void)
     smartkeys_status("\n  PARSING FORECAST DATA, PLEASE WAIT...");
 }
 
-void screen_forecast(unsigned char i, ForecastData *f, unsigned char foregroundColor, unsigned char backgroundColor, bool day,
-                    FUJI_TIME *current, FUJI_TIME *future)
+void screen_forecast(unsigned char i, ForecastData *f, unsigned char foregroundColor, unsigned char backgroundColor, bool day, FUJI_TIME *future)
 {
     //                    i  D  d   l   h
     unsigned char x[5] = {0, 7, 15, 21, 27};
@@ -857,16 +857,16 @@ void screen_forecast_keys(void)
     char tmp2[20];
 
     if (optData.units == IMPERIAL)
-        strcpy(tmp, "  SHOW\n CELSIUS");
+        strncpy2(tmp, "  SHOW\n CELSIUS", sizeof(tmp));
     else
-        strcpy(tmp, "  SHOW\nFARENHEIT");
+        strncpy2(tmp, "  SHOW\nFARENHEIT", sizeof(tmp));
 
     if (forecast_offset == 0)
     {
-        strcpy(tmp2, "  NEXT\n  PAGE");
+        strncpy2(tmp2, "  NEXT\n  PAGE", sizeof(tmp2));
     } else
     {
-        strcpy(tmp2, "  PREV\n  PAGE");
+        strncpy2(tmp2, "  PREV\n  PAGE", sizeof(tmp2));
     }
         
     smartkeys_display("  OPTIONS", tmp2, "LOCATION", "  SHOW\n DAILY", tmp, " REFRESH");
@@ -876,9 +876,9 @@ void screen_weather_keys(void)
 {
 
     if (optData.units == IMPERIAL)
-        strcpy(tmp, "  SHOW\n CELSIUS");
+        strncpy2(tmp, "  SHOW\n CELSIUS", sizeof(tmp));
     else
-        strcpy(tmp, "  SHOW\nFARENHEIT");
+        strncpy2(tmp, "  SHOW\nFARENHEIT", sizeof(tmp));
 
         
     smartkeys_display("  OPTIONS", NULL, "LOCATION", "  SHOW\nFORECAST", tmp, " REFRESH");

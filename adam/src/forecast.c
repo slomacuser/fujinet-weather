@@ -54,9 +54,9 @@ bool forecast_open(void)
     char units[10];
 
     if (optData.units == METRIC)
-        strcpy(units, "metric");
+        strncpy2(units, "metric", sizeof(units));
     else if (optData.units == IMPERIAL)
-        strcpy(units, "imperial");
+        strncpy2(units, "imperial", sizeof(units));
 
     snprintf(url, sizeof(url), "N:HTTP://%s//data/2.5/onecall?lat=%s&lon=%s&exclude=minutely,hourly,alerts,current&units=%s&appid=%s", 
                 OW_API, locData.latitude, locData.longitude, units,
@@ -134,7 +134,7 @@ void forecast_parse(unsigned char i, ForecastData *f)
 
   //snprintf(request,  sizeof(request),"%ssnow", prefix);
   //io_json_query(request, f->snow, sizeof(f->snow));
-  strcpy(f->snow, "");
+  strncpy2(f->snow, "", sizeof(f->snow));
 
 }
 
@@ -145,7 +145,6 @@ void forecast(void)
 static  bool firstTime = true;    
 static  FUJI_TIME future_time;
 static  FUJI_TIME adjust_time;
-static  FUJI_TIME current_time;  
 
   if (firstTime)
   {
@@ -157,11 +156,10 @@ static  FUJI_TIME current_time;
   {
     forceRefresh = false;
 
-    io_time(&current_time);
     memset(adjust_time, 0, sizeof(FUJI_TIME));
 
-    adjust_time.minute = optData.refreshIntervalMinutes;
-    add_time(&future_time, &current_time, &adjust_time);
+    adjust_time.minute = (unsigned char) optData.refreshIntervalMinutes;
+    add_time(&future_time, &future_time, &adjust_time);
 
     screen_forecast_init();
     
@@ -175,7 +173,7 @@ static  FUJI_TIME current_time;
       for (int i=0;i<4;i++)
       {
         forecast_parse((unsigned char) (i + forecast_offset), &forecastData);
-        screen_forecast(i,&forecastData, fg, bg, true, &current_time, &future_time);
+        screen_forecast((unsigned char) i, &forecastData, fg, bg, true, &future_time);
       }
       display_sprites();
       forecast_close();
@@ -184,8 +182,6 @@ static  FUJI_TIME current_time;
 
   }
 
-
-  
   input_init();
 
   screen_forecast_keys();
@@ -193,18 +189,21 @@ static  FUJI_TIME current_time;
   timer = 65535;
   while (timer > 0)
   {
-    if (input_forecast() || forceRefresh)
-      io_time(&future_time);
-
-    csleep(1);
+    if (input_forecast())
+    {
+      if (forceRefresh)
+        io_time(&future_time);
+      
+      break; // allow input_init to be called again
+    }
 
     if ((timer % CHECK_TIME_FREQUENCY) == 0)
     {
-      io_time(&current_time);
-      //screen_time(&current_time, &future_time, fg, bg);
       if (time_reached(&future_time))
         break;
     }
+    
+    csleep(1);
     timer--;
    }
 

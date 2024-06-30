@@ -39,7 +39,7 @@ void screen_time(FUJI_TIME *current_time, FUJI_TIME *next_update, unsigned char 
 
 void screen_daily(char *date, unsigned char icon, char *temperature, char *pressure, char *description, char *location, char *wind, char *feels, char *dew, char *visibility, char *timezone,
                   char *sunrise, char *sunset, char *humidity, char *clouds, char *time, unsigned char foregroundColor, unsigned char backgroundColor, bool dayNight,
-                  FUJI_TIME *current, FUJI_TIME *future);
+                  FUJI_TIME *future);
 
 void screen_options_init(void);
 void screen_options_load_failed(void);
@@ -71,7 +71,7 @@ void screen_weather_could_not_get(void);
 void screen_weather_parsing(void);
 void screen_weather_keys(void);
 
-void screen_forecast(unsigned char i, ForecastData *f, unsigned char foregroundColor, unsigned char backgroundColor, bool day, FUJI_TIME *current, FUJI_TIME *future);
+void screen_forecast(unsigned char i, ForecastData *f, unsigned char foregroundColor, unsigned char backgroundColor, bool day, FUJI_TIME *future);
 
 void screen_forecast_keys(void);
 
