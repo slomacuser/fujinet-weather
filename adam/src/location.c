@@ -208,24 +208,19 @@ bool location_parse_from_ip(void)
     unsigned char success[10];
     bool detected = true;
 
-    detected = detected && (io_json_query("success", success, sizeof(success)) == 0);
-    if (stricmp(success, "true") == 0)
-    {
-        detected = true;
+    detected = true;
 
-        detected = detected && (io_json_query("latitude", locData.latitude, sizeof(locData.latitude)) == 0);
+    detected = detected && (io_json_query("/latitude", locData.latitude, sizeof(locData.latitude)) == 0);
 
-        detected = detected && (io_json_query("longitude", locData.longitude, sizeof(locData.longitude)) == 0);
+    detected = detected && (io_json_query("/longitude", locData.longitude, sizeof(locData.longitude)) == 0);
 
-        io_json_query("city", locData.city, sizeof(locData.city));
-        
-        io_json_query("country_code", locData.country_code, sizeof(locData.country_code));
-        
-        io_json_query("region_code", locData.region_code, sizeof(locData.region_code));
-        
-        //io_json_query("/ip", ip, sizeof(ip));
-
-    }
+    io_json_query("/city", locData.city, sizeof(locData.city));
+    
+    io_json_query("/country_code", locData.country_code, sizeof(locData.country_code));
+    
+    io_json_query("/region_code", locData.region_code, sizeof(locData.region_code));
+    
+    //io_json_query("/ip", ip, sizeof(ip));
     return detected;
 
 }
