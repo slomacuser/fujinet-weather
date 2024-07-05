@@ -2,9 +2,26 @@
 #
 # Set the TARGETS and PROGRAM values as required.
 # See makefiles/build.mk for details on directory structure for src files and how to add custom extensions to the build.
+$(info |)
+$(info |)
+$(info Starting Build)
 
 TARGETS = apple2enh apple2
 PROGRAM := weather
+
+# We need to set this here to point to the relative path to the fujinet-build-tools repo
+#FUJINET-BUILD-TOOLS_DIR := ../../fujinet-build-tools
+
+export FUJINET_BUILD_TOOLS_DIR := ../../fujinet-build-tools
+export FUJINET_LIB_VERSION := 4.3.1
+
+
+# Check if FUJINET_BUILD_TOOLS_DIR is set to a real directory
+ifeq ($(wildcard $(FUJINET_BUILD_TOOLS_DIR)),)
+$(error You must have FUJINET_BUILD_TOOLS_DIR set to the location of fujinet-build-tools repo)
+endif
+
+$(info >>>> Using FUJINET_BUILD_TOOLS_DIR=$(FUJINET_BUILD_TOOLS_DIR))
 
 SUB_TASKS := clean disk test release
 .PHONY: all help $(SUB_TASKS)
@@ -14,7 +31,7 @@ all:
 		echo "-------------------------------------"; \
 		echo "Building $$target"; \
 		echo "-------------------------------------"; \
-		$(MAKE) --no-print-directory -f ../../fujinet-build-tools/makefiles/build.mk CURRENT_TARGET=$$target PROGRAM=$(PROGRAM) $(MAKECMDGOALS); \
+		$(MAKE) --no-print-directory -f $(FUJINET_BUILD_TOOLS_DIR)/makefiles/build.mk CURRENT_TARGET=$$target PROGRAM=$(PROGRAM) $(MAKECMDGOALS); \
 	done
 
 # if disk images were built show them
