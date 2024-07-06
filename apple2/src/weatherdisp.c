@@ -5,10 +5,7 @@
 #include	<conio.h>
 #include	"hgrtext.h"
 #include	"weatherdefs.h"
-#include	"weatherinfo.h"
 #include	"weatherdisp.h"
-
-#define FUJICMD_READ_APP_KEY 0xdd
 
 extern char disp_page;
 extern char current_screen;
@@ -18,6 +15,7 @@ char c_str[] = {0x22, 0x43, 0x00};
 char f_str[] = {0x22, 0x46,0x00};
 char min_str[] = {0x23, 0x24,0x00};
 char max_str[] = {0x26, 0x27,0x00};
+char precip_str[] = {0x28, 0x29, 0x00};
 
 char *temp_unit[] = {c_str, f_str};
 char *speed_unit[] = {" m/s", "mph"};
@@ -26,39 +24,169 @@ char *wind_deg[] = {" N", " NE", " E", " SE", " S", " SW", " W", " NW"};
 
 char current_forecast_page = 0;
 
-char icon_code(char *buf) {
-	int	value;
-	char code;
-
-	*(buf + 2) = 0x00;
-	value = atoi(buf);
-	switch (value) {
-		case	1:
-		case	2:
-		case	3:
-		case	4:
-			code = value - 1;
+//
+// decode description string from weather code
+//
+void decode_description(char code, char *buf) {
+	switch (code) {
+		case 0:
+			strcpy(buf, "Clear sky");
 			break;
-		case	9:
-			code = 4;
+		case 1:
+			strcpy(buf, "Mainly clear");
 			break;
-		case	10:
-			code = 5;
-			break;
-		case	11:
-			code = 6;
-			break;
-		case	13:
-			code = 7;
-			break;
-		case	50:
-			code = 8;
-			break;
+		case 2:
+		 	strcpy(buf, "Partly cloudy");
+            break;
+		case 3:
+		 	strcpy(buf, "Cloudy");
+            break;
+		case 45:
+		 	strcpy(buf, "Fog");
+            break;
+		case 48:
+		 	strcpy(buf, "Depositing rime fog");
+            break;
+		case 51:
+		 	strcpy(buf, "Drizzle light");
+            break;
+		case 53:
+		 	strcpy(buf, "Drizzle moderate");
+            break;
+		case 55:
+		 	strcpy(buf, "Drizzle dense intensity");
+            break;
+		case 56:
+		 	strcpy(buf, "Freezing Drizzle light");
+            break;
+		case 57:
+		 	strcpy(buf, "Freezing Drizzle dense intensity");
+            break;
+		case 61:
+		 	strcpy(buf, "Rain slight");
+            break;
+		case 63:
+		 	strcpy(buf, "Rain moderate");
+            break;
+		case 65:
+		 	strcpy(buf, "Rain heavy intensity");
+            break;
+		case 66:
+		 	strcpy(buf, "Freezing rain light");
+            break;
+		case 67:
+		 	strcpy(buf, "Freezing rain heavy intensity");
+            break;
+		case 71:
+		 	strcpy(buf, "Snow fall slight");
+            break;
+		case 73:
+		 	strcpy(buf, "Snow fall moderate");
+            break;
+		case 75:
+		 	strcpy(buf, "Snow fall heavy intensity");
+            break;
+		case 77:
+		 	strcpy(buf, "Snow grains");
+            break;
+		case 80:
+		 	strcpy(buf, "Rain showers slight");
+            break;
+		case 81:
+		 	strcpy(buf, "Rain showers moderate");
+            break;
+		case 82:
+		 	strcpy(buf, "Rain showers violent");
+            break;
+		case 85:
+		 	strcpy(buf, "Snow showers slight");
+            break;
+		case 86:
+		 	strcpy(buf, "Snow showers heavy");
+            break;
+		case 95:
+		case 96:
+		case 99:
+		 	strcpy(buf, "Thunerstorm");
+            break;
+		default:
+		 	strcpy(buf, "???");
 	}
-	return (code);
+}
+//
+// extract time string 'hh:mm'
+//
+char *time_str(char *buf) {
+	*(buf + 16) = 0x00;
+	return((buf + 11));
+}
+//
+//
+char icon_code(char code) {
+	char	result;
+
+	switch (code) {
+// clear
+		case	0:
+			result = 0;
+			break;
+// mainly clear
+		case	1:
+			result = 1;
+			break;
+// partly cloudy
+		case	2:
+			result = 2;
+			break;
+// cloud
+		case	3:
+			result = 3;
+			break;
+// rain showers
+		case	56:
+		case	57:
+		case	80:
+		case	81:
+		case	82:
+			result = 4;
+			break;
+// drizzle, rain
+		case	51:
+		case	53:
+		case	55:
+		case	61:
+		case	63:
+		case	65:
+		case	66:
+		case	67:
+			result = 5;
+			break;
+// thunderstorm
+		case	95:
+		case	96:
+		case	99:
+			result = 6;
+			break;
+// snow
+		case	71:
+		case	73:
+		case	75:
+		case	77:
+		case	85:
+		case	86:
+			result = 7;
+			break;
+// fog
+		case	45:
+		case	48:
+			result = 8;
+			break;
+		default:
+			result = 1;
+	}
+	return (result);
 }
 
-// Hiresページ1のメモリアドレス
 #define HIRES_PAGE1 0x2000
 #define HIRES_SIZE  0x2000
 
@@ -67,9 +195,9 @@ void clear_hires_page1() {
 }
 
 
-void draw_weather_icon(char *buf, char col, char row) {
+void draw_weather_icon(char code, char col, char row) {
 	set_colrow(col, row);
-	draw_tile(icon_code(buf));
+	draw_tile(icon_code(code));
 }
 
 // draw sunrise / sunset icon
@@ -89,8 +217,8 @@ char padding_center(char *s) {
 //
 void disp_weather(WEATHER *wi) {
 	char row;
-	char time_buf[40];
-	char prbuf[40];
+	char time_buf[LINE_LEN];
+	char prbuf[LINE_LEN];
 	long localtime;
 	long visi;
 	char wind_idx;
@@ -124,15 +252,16 @@ void disp_weather(WEATHER *wi) {
     draw_string(prbuf);
 
 //  line 4 description
+	decode_description(wi->icon, prbuf);
 	set_colrow(12,4);
-	draw_string(wi->description);
+	draw_string(prbuf);
 
 //  line 5 pressure
 	set_colrow(12,5);
-	sprintf(prbuf, "%s%s", wi->pressure, "hPa");
+	sprintf(prbuf, "%s%s", wi->pressure, " hPa");
 	draw_string(prbuf);
 
-//  line j icon
+//  line 6 icon
 	draw_weather_icon(wi->icon, 6, 4);
 
 //  line 11,12 sunrise/set icon
@@ -153,17 +282,20 @@ void disp_weather(WEATHER *wi) {
 	draw_string(time_buf);
 
 
-//  line 11 feels like
+//  line 10-11 Apparent Temperature
+	row = 10;
+	set_row(row);
+	sprintf(prbuf, "Apparent  : %s%s", wi->feels_like, temp_unit[unit_opt]);
+	draw_string(prbuf);
 	row = 11;
     set_row(row);
-	sprintf(prbuf, "Feels like: %s%s", wi->feels_like, temp_unit[unit_opt]);
-    draw_string(prbuf);
+    draw_string(" Temp");
 
 //  line 12 wind speed, deg
 	row = 12;
     set_row(row);
 	wind_idx = atoi(wi->wind_deg) / 45;
-	sprintf(prbuf, "Wind Speed: %s%s%s", wi->wind_speed, speed_unit[unit_opt], wind_deg[wind_idx]);
+	sprintf(prbuf, "Wind Speed:  %s%s%s", wi->wind_speed, speed_unit[unit_opt], wind_deg[wind_idx]);
     draw_string(prbuf);
 
 //  line 14 dew point
@@ -203,8 +335,8 @@ void disp_weather(WEATHER *wi) {
 void disp_forecast(FORECAST *fc, char p) {
 	char	i;
 	char	page;
-	char    tdbuf[40];
-	char	prbuf[10];
+	char    tdbuf[LINE_LEN];
+	char	prbuf[QUARTER_LEN];
 	long	localtime;
 	char	wind_idx;
 
@@ -219,12 +351,14 @@ void disp_forecast(FORECAST *fc, char p) {
 	clear_hires_page1();
 
 //	draw heder
-	set_colrow(0, 10);
-	draw_string(min_str);
 	set_colrow(0, 9);
 	draw_string(max_str);
-	set_colrow(0, 16);
-	draw_string("Hum: ");
+	set_colrow(0, 10);
+	draw_string(min_str);
+	set_colrow(0, 12);
+	draw_string("UV ");
+	set_colrow(0, 17);
+	draw_string(precip_str);
 
 	for (i=0; i<=3; i++) {
 //   day         
@@ -248,6 +382,9 @@ void disp_forecast(FORECAST *fc, char p) {
 
 //   weather icon
 		draw_weather_icon(fc->day[i+page].icon, (i*10)+4, 4);
+//debug
+//		gotoxy((i*10)+4, 22);
+//		cprintf("#%2d", fc->day[i+page].icon);
 
 //   max temp
 		sprintf(prbuf, "%s%s", fc->day[i+page].temp_max, temp_unit[unit_opt]);
@@ -259,24 +396,25 @@ void disp_forecast(FORECAST *fc, char p) {
 		set_colrow((i*10)+3, 10);
 		draw_string(prbuf);
 
-//   pressure
-		sprintf(prbuf, "%shPa", fc->day[i+page].pressure);
-		set_colrow((i*10)+3, 12);
-		draw_string(prbuf);
-
 //   wind degree
     	wind_idx = atoi(fc->day[i+page].wind_deg) / 45;
 		sprintf(prbuf, "Wind:%s", wind_deg[i+page]);
-		set_colrow((i*10)+2, 13);
+		set_colrow((i*10)+2, 14);
 		draw_string(prbuf);
 
 //   wind speed
 		sprintf(prbuf, "%s%s", fc->day[i+page].wind_speed, speed_unit[unit_opt]);
-		set_colrow((i*10)+2, 14);
+		set_colrow((i*10)+2, 15);
 		draw_string(prbuf);
-//   humidity
-		sprintf(prbuf, "%s%%", fc->day[i+page].humidity);
-		set_colrow((i*10)+5, 16);
+
+//   uv index max
+		sprintf(prbuf, " %s ", fc->day[i+page].uv_index_max);
+		set_colrow((i*10)+3, 12);
+		draw_string(prbuf);
+
+//   precipitation sum
+		sprintf(prbuf, "%s mm", fc->day[i+page].precipitation_sum);
+		set_colrow((i*10)+4, 17);
 		draw_string(prbuf);
 
 	}
