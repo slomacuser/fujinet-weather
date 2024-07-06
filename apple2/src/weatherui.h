@@ -1,7 +1,7 @@
 #ifndef	WEATHERUI_H
 #define WEATHERUI_H
 #include "weatherdefs.h"
-void disp_title();
+void handle_err();
 void disp_menu(char *s);
 void clear_display();
 void change_location(LOCATION *loc);

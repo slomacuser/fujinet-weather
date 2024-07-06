@@ -1,14 +1,23 @@
 #include	<stdio.h>
+#include	<stdlib.h>
 #include	<string.h>
 #include	<conio.h>
 #include	"weatherdefs.h"
+#include	"openmetro.h"
 #include	"hgrtext.h"
 
-#include	"weatherinfo.h"
 
 extern LOCATION current;
 
-void disp_title() {
+int	err;
+//
+// handle_err
+//
+void handle_err(char *message) {
+    if (err <  0) {
+        printf("err: %s\n", message);
+        exit(1);
+    } 
 }
 void disp_menu(char *str) {
 	gotoxy(0, 20);
@@ -40,7 +49,7 @@ void change_location(LOCATION *loc) {
 		*loc = current;
 	}
 	else {
-		if (!direct_geocoding(loc, input)) {
+		if (!om_geocoding(loc, input)) {
 		gotoxy(2, 15);
 		cprintf("city '%s'was not found", input);
 		gotoxy(2, 16);
@@ -58,16 +67,6 @@ void disp_message(char *msg) {
 	clrscr();
 	gotoxy(0,10);
 	cprintf("%s", msg);
-}
-void disp_nokey() {
-	clrscr();
-	gotoxy(0,10);
-	cprintf("Error: APP KEY was not found\n");
-	gotoxy(0,12);
-	cprintf("Please get your own API KEY: \r\n");
-	cprintf("Go to openweathermap.org and sign up.\r\n");
-	cprintf("Put API Key into a file '56000101.key'\r\n");
-	cprintf("in the /FujiNet/ directory of SD card.\r\n");
 }
 char get_keyin() {
 	while (!kbhit()) {

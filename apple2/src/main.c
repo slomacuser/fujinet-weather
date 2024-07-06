@@ -11,9 +11,9 @@
 
 #include "weatherdefs.h"
 #include "weatherui.h"
-#include "weatherinfo.h"
+#include "ipapi.h"
+#include "openmetro.h"
 #include "weatherdisp.h"
-#include "appkey.h"
 
 LOCATION loc;
 LOCATION current;
@@ -29,6 +29,9 @@ typedef enum command {
 } COMMAND;
 
 enum unit_option unit_opt = METRIC;
+char weather_menu[] = "F)orecast R)ef U)nit L)oc Q)uit         ";
+char *forecast_menu[3] = {"???", " N)ext  W)eather                 ",
+                         " B)ack  W)eather                 "};
 
 void main(void)
 {
@@ -36,8 +39,6 @@ void main(void)
 	char	forecast_page;
 	char ch;
 	COMMAND com = COM_REFRESH;
-
-	get_appkey();
 
 	disp_message("     fetching location data...");
 	if (!get_location(&loc)) {
@@ -51,15 +52,15 @@ void main(void)
 		switch (com) {
 			case COM_REFRESH:		// refresh
 				disp_message("     fetching weather data...");
-				get_owm_info(&loc, &wi, &fc);
+				get_om_info(&loc, &wi, &fc);
 				current_screen = 0;
 			case COM_WEATHER:		// weather
 				disp_weather(&wi);
-				disp_menu("F)orecast R)ef U)nit L)oc Q)uit  v1.1");
+				disp_menu(weather_menu);
 				break;
 			case COM_FORECAST:		// forecast
 				disp_forecast(&fc, forecast_page);
-				disp_menu(" N)ext  B)ack  W)eather            v.1.1");
+				disp_menu(forecast_menu[forecast_page]);
 				break;
 			default:
 				;

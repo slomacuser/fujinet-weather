@@ -7,17 +7,17 @@ struct location_info {
 	char	lon[HALF_LEN];
 	char	lat[HALF_LEN];
 	char	city[HALF_LEN];
+	char	countryCode[QUARTER_LEN];
 };
 typedef struct location_info LOCATION;
 
 struct weather_info {
-	char	name[LINE_LEN];
-	char	country[LINE_LEN];
+	char	name[HALF_LEN];
+	char	country[HALF_LEN];
 	char	timezone[LINE_LEN];
 	long	td;
 	long	tz;						// time-zone offset
-	char	description[LINE_LEN];
-	char	icon[5];
+	char	icon;
 	long	sunrise;	
 	long	sunset;
 	char	temp[QUARTER_LEN];	
@@ -25,12 +25,10 @@ struct weather_info {
 	char	pressure[QUARTER_LEN];
 	char	humidity[QUARTER_LEN];
 	char	dew_point[QUARTER_LEN];
-//	char	uvi[QUARTER_LEN];
 	char	clouds[QUARTER_LEN];
 	char	visibility[QUARTER_LEN];
 	char	wind_speed[QUARTER_LEN];
 	char	wind_deg[QUARTER_LEN];
-//	char	wind_gust[QUARTER_LEN];
 };
 typedef struct weather_info WEATHER;
 
@@ -38,16 +36,13 @@ struct day_info {
 	long	td;
 	long	sunrise;	
 	long	sunset;
-	char	temp_day[QUARTER_LEN]; //daily/n/temp/day
 	char	temp_min[QUARTER_LEN];
 	char	temp_max[QUARTER_LEN];
-	char	description[LINE_LEN]; //daily/n/weather/n/description
-	char	icon[5];   				// /daily/n/weather/n/icon
-	char	pressure[QUARTER_LEN]; //daily/n/pressure
-	char	dew_point[QUARTER_LEN]; //daily/n/dew_point
-	char	wind_speed[QUARTER_LEN]; //daily/n/wind_speed
-	char	wind_deg[QUARTER_LEN]; //daily/n/wind_deg
-	char	humidity[QUARTER_LEN]; //daily/n/humidity
+	char	icon;   
+	char	precipitation_sum[QUARTER_LEN];
+  	char	uv_index_max[QUARTER_LEN]; 
+	char	wind_speed[QUARTER_LEN];
+	char	wind_deg[QUARTER_LEN]; 
 };
 typedef struct day_info  DAYINFO;
 
@@ -59,4 +54,5 @@ enum unit_option {
     METRIC,
     IMPERIAL
 };
+typedef enum unit_option UNITOPT;
 #endif
