@@ -1,6 +1,8 @@
-/*
- * # Wolrd Weather from FujiNet                     
- *
+/**
+ * @brief   weather
+ * @author  Shunichi Kitahara
+ * @license gpl v. 3
+ * @verbose main
  */
 
 #include <stdlib.h>
@@ -17,7 +19,7 @@
 
 LOCATION loc;
 LOCATION current;
-WEATHER wi;
+WEATHER  wi;
 FORECAST fc;
 char	current_screen;
 
@@ -37,7 +39,7 @@ void main(void)
 {
 	bool	quit = false;
 	char	forecast_page;
-	char ch;
+	char	ch;
 	COMMAND com = COM_REFRESH;
 
 	disp_message("     fetching location data...");
