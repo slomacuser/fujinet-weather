@@ -107,25 +107,44 @@
 ds1:
 	lda (String),y
 	beq	ds2			; null byte done
-	jsr	_DrawCharCol
+	jsr	_draw_char_col
 	cpy	#40			; col < 40 ?
 	bcc	ds1
 ds2:
 	rts
-;DrawCharCol( char c, int col );
-.export _DrawCharCol
-_DrawCharCol:
-	rol
-	rol
-	rol
-	tax
-	and	#$f8
-	sta	_LoadFont+1
-	txa
-	and	#3
-	rol
-	adc	#>Font		;+= FontHi; Carry = 0 since s+0 from above
-	sta	_LoadFont+2
+;draw_char_col( char c, int col );
+.export _draw_char_col
+_draw_char_col:
+	pha
+	and		#$e0	; %11100000 extract high 3bit
+	clc
+	rol				; msb is in carry
+	rol				;     is in bit0
+	rol				;     is in bit1
+	rol				;     is in bit2
+	sta		index+1	; save index High
+	pla
+	asl				; * 2
+	asl				; * 4
+	asl				; * 8
+	sta		index	;save index Lo		
+	clc
+	adc		#<Font
+	sta		_LoadFont+1	; self mod
+	lda		index+1		;
+	adc		#>Font
+	sta		_LoadFont+2	;
+;	rol
+;	rol
+;	rol
+;	tax
+;	and	#$f8
+;	sta	_LoadFont+1
+;	txa
+;	and	#3
+;	rol
+;	adc	#>Font		;+= FontHi; Carry = 0 since s+0 from above
+;	sta	_LoadFont+2
 _DrawChar1:
 	ldx	TmpHi
 	stx	TopHi
@@ -148,6 +167,7 @@ IncCursorCol:
 	ldx	TopHi		; Move cursor back to top of scanline
 	stx	TmpHi
 	rts
+index:	.res		2
 .endproc
 .export		_draw_tile
 .proc	   _draw_tile
@@ -259,11 +279,13 @@ HgrHiY:
         .byte $00,$00,$01,$01,$02,$02,$03,$03
         .byte $00,$00,$01,$01,$02,$02,$03,$03
 SaveText80:	.res	1
-.segment	"FONTDATA"
+.segment	"RODATA"
+;.segment	"FONTDATA"
 Font:
 .include	"fontBB.inc"
-.segment	"TILEDATA"
+;.segment	"TILEDATA"
 Tile:
 .include	"weatherEvenTile.inc"
 ;xFont:
 ;.include	"font78.inc"
+.segment	"CODE"
