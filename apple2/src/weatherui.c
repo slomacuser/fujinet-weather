@@ -3,22 +3,38 @@
 #include	<string.h>
 #include	<conio.h>
 #include	"weatherdefs.h"
-#include	"openmetro.h"
+#include	"openmeteo.h"
 #include	"hgrtext.h"
 
 
 extern LOCATION current;
 
 int	err;
+
+//
+// get key-in and return
+//
+char get_keyin() {
+	while (!kbhit()) {
+		;
+	}
+	return (cgetc());
+}
 //
 // handle_err
 //
 void handle_err(char *message) {
-    if (err <  0) {
-        printf("err: %s\n", message);
+    if (err !=  0) {
+
+        cprintf("\n\n\rerror: %s:code=%d\n\r", message, err);
+        cprintf("[please press any key (exit)]");
+		get_keyin(); 
         exit(1);
     } 
 }
+//
+//
+//
 void disp_menu(char *str) {
 	gotoxy(0, 20);
 	cprintf(str);
@@ -67,10 +83,4 @@ void disp_message(char *msg) {
 	clrscr();
 	gotoxy(0,10);
 	cprintf("%s", msg);
-}
-char get_keyin() {
-	while (!kbhit()) {
-		;
-	}
-	return (cgetc());
 }
