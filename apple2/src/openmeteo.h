@@ -3,7 +3,7 @@
 #include <stdbool.h>
 
 // function
-bool get_location(LOCATION *loc);
+void get_location(LOCATION *loc);
 
 // OpenMetro 
 void setup_omurl();

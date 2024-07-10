@@ -14,7 +14,7 @@
 #include "weatherdefs.h"
 #include "weatherui.h"
 #include "ipapi.h"
-#include "openmetro.h"
+#include "openmeteo.h"
 #include "weatherdisp.h"
 
 LOCATION loc;
@@ -43,10 +43,7 @@ void main(void)
 	COMMAND com = COM_REFRESH;
 
 	disp_message("     fetching location data...");
-	if (!get_location(&loc)) {
-		disp_message("Sorry, Internal Error. Exit\n");
-		exit(1);
-	}
+	get_location(&loc);
 	current = loc;
 	forecast_page = 0;
 
