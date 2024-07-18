@@ -31,9 +31,9 @@ typedef enum command {
 } COMMAND;
 
 enum unit_option unit_opt = METRIC;
-char weather_menu[] = "F)orecast R)ef U)nit L)oc Q)uit         ";
-char *forecast_menu[3] = {"???", " N)ext  W)eather                 ",
-                         " B)ack  W)eather                 "};
+char weather_menu[] = "N)apoved O)svezi E)note L)okacija I)zhod         ";
+char *forecast_menu[3] = {"???", " N)aprej  V)reme                 ",
+                         " P)ojdi nazaj  V)reme                 "};
 
 void main(void)
 {
@@ -42,7 +42,7 @@ void main(void)
 	char	ch;
 	COMMAND com = COM_REFRESH;
 
-	disp_message("     fetching location data...");
+	disp_message("     prenašam lokacijske podatke...");
 	get_location(&loc);
 	current = loc;
 	forecast_page = 0;
@@ -50,7 +50,7 @@ void main(void)
 	while (!quit) {
 		switch (com) {
 			case COM_REFRESH:		// refresh
-				disp_message("     fetching weather data...");
+				disp_message("     prenašam lokacijske podatke...");
 				get_om_info(&loc, &wi, &fc);
 				current_screen = 0;
 			case COM_WEATHER:		// weather
@@ -67,12 +67,12 @@ void main(void)
 		ch = get_keyin();
 		if (current_screen == 1) {			// weather
 			switch (ch) {
-				case 'r':
-				case 'R':
+				case 'o':
+				case 'O':
 					com = COM_REFRESH;
 					break;
-				case 'u':
-				case 'U':
+				case 'e':
+				case 'E':
 					unit_opt = (unit_opt ==  METRIC) ? IMPERIAL : METRIC;
 					com = COM_REFRESH;
 					break;
@@ -81,12 +81,12 @@ void main(void)
 					change_location(&loc);
 					com = COM_REFRESH;
 					break;
-				case 'q':
-				case 'Q':
+				case 'i':
+				case 'I':
 					quit = true;
 					break;
-				case 'f':
-				case 'F':
+				case 'n':
+				case 'N':
 					com = COM_FORECAST;
 					forecast_page = 1;
 					break;
@@ -96,8 +96,8 @@ void main(void)
 		}
 		else {								// forecast
 			switch (ch) {
-			case 'w':
-			case 'W':
+			case 'v':
+			case 'V':
 				com = COM_WEATHER;
 				break;
 			case 'n':
@@ -105,8 +105,8 @@ void main(void)
 				com = COM_FORECAST;
 				forecast_page = 2;
 				break;
-			case 'b':
-			case 'B':
+			case 'p':
+			case 'P':
 				com = COM_FORECAST;
 				forecast_page = 1;
 				break;
