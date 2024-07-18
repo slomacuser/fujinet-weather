@@ -20,7 +20,7 @@ char precip_str[] = {0x28, 0x29, 0x00};
 char *temp_unit[] = {c_str, f_str};
 char *speed_unit[] = {" m/s", "mph"};
 
-char *wind_deg[] = {" N", " NE", " E", " SE", " S", " SW", " W", " NW"};
+char *wind_deg[] = {" S", " SV", " V", " JV", " J", " JZ", " Z", " SZ"};
 
 char current_forecast_page = 0;
 
@@ -30,84 +30,84 @@ char current_forecast_page = 0;
 void decode_description(char code, char *buf) {
 	switch (code) {
 		case 0:
-			strcpy(buf, "Clear sky");
+			strcpy(buf, "Jasno nebo");
 			break;
 		case 1:
-			strcpy(buf, "Mainly clear");
+			strcpy(buf, "Pretezno jasno");
 			break;
 		case 2:
-		 	strcpy(buf, "Partly cloudy");
+		 	strcpy(buf, "Delno oblacno");
             break;
 		case 3:
-		 	strcpy(buf, "Cloudy");
+		 	strcpy(buf, "Oblacno");
             break;
 		case 45:
-		 	strcpy(buf, "Fog");
+		 	strcpy(buf, "Megla");
             break;
 		case 48:
-		 	strcpy(buf, "Depositing rime fog");
+		 	strcpy(buf, "Megla z ivjem");
             break;
 		case 51:
-		 	strcpy(buf, "Drizzle light");
+		 	strcpy(buf, "Rahlo rosenje");
             break;
 		case 53:
-		 	strcpy(buf, "Drizzle moderate");
+		 	strcpy(buf, "Zmerno rosenje");
             break;
 		case 55:
-		 	strcpy(buf, "Drizzle dense intensity");
+		 	strcpy(buf, "Gosto rosenje");
             break;
 		case 56:
-		 	strcpy(buf, "Freezing Drizzle light");
+		 	strcpy(buf, "Rahlo zmrzovanje rosenja");
             break;
 		case 57:
-		 	strcpy(buf, "Freezing Drizzle dense intensity");
+		 	strcpy(buf, "Gosto zmrzovanje rosenja");
             break;
 		case 61:
-		 	strcpy(buf, "Rain slight");
+		 	strcpy(buf, "Rahlo dezevje");
             break;
 		case 63:
-		 	strcpy(buf, "Rain moderate");
+		 	strcpy(buf, "Zmerno dezevje");
             break;
 		case 65:
-		 	strcpy(buf, "Rain heavy intensity");
+		 	strcpy(buf, "Mocno dezevje");
             break;
 		case 66:
-		 	strcpy(buf, "Freezing rain light");
+		 	strcpy(buf, "Rahlo zmrzovanje dezja");
             break;
 		case 67:
-		 	strcpy(buf, "Freezing rain heavy intensity");
+		 	strcpy(buf, "Mocno zmrzovanje dezja");
             break;
 		case 71:
-		 	strcpy(buf, "Snow fall slight");
+		 	strcpy(buf, "Rahlo snezenje");
             break;
 		case 73:
-		 	strcpy(buf, "Snow fall moderate");
+		 	strcpy(buf, "Zmerno snezenje");
             break;
 		case 75:
-		 	strcpy(buf, "Snow fall heavy intensity");
+		 	strcpy(buf, "Mocno snezenje");
             break;
 		case 77:
-		 	strcpy(buf, "Snow grains");
+		 	strcpy(buf, "Snezna zrna");
             break;
 		case 80:
-		 	strcpy(buf, "Rain showers slight");
+		 	strcpy(buf, "Rahle plohe");
             break;
 		case 81:
-		 	strcpy(buf, "Rain showers moderate");
+		 	strcpy(buf, "Zmerne plohe");
             break;
 		case 82:
-		 	strcpy(buf, "Rain showers violent");
+		 	strcpy(buf, "Mocne plohe");
             break;
 		case 85:
-		 	strcpy(buf, "Snow showers slight");
+		 	strcpy(buf, "Rahle snezne plohe");
             break;
 		case 86:
-		 	strcpy(buf, "Snow showers heavy");
+		 	strcpy(buf, "Mocne snezne plohe");
             break;
 		case 95:
 		case 96:
 		case 99:
-		 	strcpy(buf, "Thunerstorm");
+		 	strcpy(buf, "Nevihta");
             break;
 		default:
 		 	strcpy(buf, "???");
@@ -285,7 +285,7 @@ void disp_weather(WEATHER *wi) {
 //  line 10-11 Apparent Temperature
 	row = 10;
 	set_row(row);
-	sprintf(prbuf, "Apparent  : %s%s", wi->feels_like, temp_unit[unit_opt]);
+	sprintf(prbuf, "Navidezno  : %s%s", wi->feels_like, temp_unit[unit_opt]);
 	draw_string(prbuf);
 	row = 11;
     set_row(row);
@@ -295,18 +295,18 @@ void disp_weather(WEATHER *wi) {
 	row = 12;
     set_row(row);
 	wind_idx = atoi(wi->wind_deg) / 45;
-	sprintf(prbuf, "Wind Speed:  %s%s%s", wi->wind_speed, speed_unit[unit_opt], wind_deg[wind_idx]);
+	sprintf(prbuf, "Hitrost vetra:  %s%s%s", wi->wind_speed, speed_unit[unit_opt], wind_deg[wind_idx]);
     draw_string(prbuf);
 
 //  line 14 dew point
 	row = 14;
 	set_row(row);
-	sprintf(prbuf, "Dew Point : %s%s", wi->dew_point, temp_unit[unit_opt]);
+	sprintf(prbuf, "Tocka rosisca : %s%s", wi->dew_point, temp_unit[unit_opt]);
 	draw_string(prbuf);
 
 //  line 14 humidity
 	set_colrow(24, row);
-	sprintf(prbuf, "Humidity: %s%%", wi->humidity);
+	sprintf(prbuf, "Vlaznost: %s%%", wi->humidity);
 	draw_string(prbuf);
 
 //  line 15 visibility
@@ -314,18 +314,18 @@ void disp_weather(WEATHER *wi) {
 	set_row(row);
 	strcpy(prbuf, wi->visibility);
 	visi = atol(prbuf) / 1000;
-	sprintf(prbuf, "Visibility: %ld km", visi);
+	sprintf(prbuf, "Vidljivost: %ld km", visi);
 	draw_string(prbuf);
 
 //  line 15 clouds
 	set_colrow(24, row);
-	sprintf(prbuf, "Clouds  : %s%%", wi->clouds);
+	sprintf(prbuf, "Oblacnost  : %s%%", wi->clouds);
 	draw_string(prbuf);
 
 //  line 18 timezone
 	row = 18;
 	set_colrow(2, row);
-	sprintf(prbuf, "TimeZone: %s", wi->timezone);
+	sprintf(prbuf, "Casovni pas: %s", wi->timezone);
 	draw_string(prbuf);
 }
 
